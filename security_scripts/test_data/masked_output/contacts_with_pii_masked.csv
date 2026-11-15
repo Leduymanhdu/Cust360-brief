@@ -1,0 +1,6 @@
+account_id,contact_name,role,phone,email,tax_number,notes
+SN-001,Nguyễn Văn An,Sales Manager,***-***-****,***@***.***,0312345678,Khách VIP
+SN-001,Trần Thị Bình,Accountant,***-***-****,binh@company.vn,,Xử lý thanh toán
+SN-002,Lê Hoàng Nam,Director,***-***-****,***@***.***,***-***-****,Quyết định mua hàng
+SN-002,Công ty ABC,Company,02838221234,info@abc.com.vn,0312345679,Hotline công ty
+SN-003,Phạm Đức,Engineer,***-***-****,***@***.***,,Hỗ trợ kỹ thuật
