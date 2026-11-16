@@ -1,0 +1,18 @@
+/* BriefingStatement.module.css – KAN-20 */
+
+.statement {
+  margin: 0 0 10px 0;
+  line-height: 1.65;
+  color: #202124;
+  font-size: 0.9rem;
+}
+
+.statementText {
+  /* Giữ text chảy tự nhiên, badge inline theo sau */
+}
+
+@media (prefers-color-scheme: dark) {
+  .statement {
+    color: #e8eaed;
+  }
+}
