@@ -1,18 +1,3 @@
-// ============================================================
-// CitationBadge.tsx
-// KAN-20 – Component hiển thị số trích dẫn [n] với tooltip hover
-//
-// Props:
-//   citationNumber – số thứ tự [1], [2], ...
-//   citation       – dữ liệu Citation (từ CitationMap)
-//
-// Behavior:
-//   • Hover → tooltip xuất hiện (trên hoặc dưới tùy vị trí màn hình)
-//   • Tooltip chứa: claim_text, source_type (PDF/COMMERCIAL), page_number
-//   • Click → tooltip ghim lại (dismiss khi click ngoài)
-//   • Keyboard-accessible: focus + Enter/Space mở tooltip
-// ============================================================
-
 import React, {
   useState,
   useRef,
@@ -22,8 +7,6 @@ import React, {
 } from 'react';
 import type { Citation } from '../../types/briefing';
 import styles from './CitationBadge.module.css';
-
-// ─── Icons ──────────────────────────────────────────────────
 
 const PDFIcon = () => (
   <svg
@@ -64,15 +47,11 @@ const CSVIcon = () => (
   </svg>
 );
 
-// ─── Types ───────────────────────────────────────────────────
-
 interface CitationBadgeProps {
   citationNumber: number;
-  citation?: Citation; // undefined khi đang loading hoặc không tìm thấy
+  citation?: Citation;
   isLoading?: boolean;
 }
-
-// ─── Component ───────────────────────────────────────────────
 
 export const CitationBadge: React.FC<CitationBadgeProps> = ({
   citationNumber,
@@ -87,7 +66,6 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
   const tooltipRef = useRef<HTMLDivElement>(null);
   const tooltipId = useId();
 
-  // Tính toán vị trí tooltip (trên/dưới) dựa vào khoảng cách tới top viewport
   const updatePlacement = useCallback(() => {
     if (!badgeRef.current) return;
     const rect = badgeRef.current.getBoundingClientRect();
@@ -113,7 +91,6 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
     setVisible(true);
   }, [updatePlacement]);
 
-  // Đóng tooltip khi click ngoài
   useEffect(() => {
     if (!pinned) return;
 
@@ -133,7 +110,6 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [pinned]);
 
-  // Đóng khi nhấn Escape
   useEffect(() => {
     if (!visible) return;
     const handleEsc = (e: KeyboardEvent) => {
@@ -147,7 +123,6 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
     return () => document.removeEventListener('keydown', handleEsc);
   }, [visible]);
 
-  // ── Render badge skeleton khi loading ──
   if (isLoading) {
     return (
       <span className={styles.badgeSkeleton} aria-hidden="true">
@@ -156,7 +131,6 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
     );
   }
 
-  // ── Render badge không có data (citation không tồn tại) ──
   if (!citation) {
     return (
       <span
@@ -173,7 +147,6 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
 
   return (
     <span className={styles.wrapper}>
-      {/* ── Badge button ── */}
       <button
         ref={badgeRef}
         type="button"
@@ -190,7 +163,6 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
         [{citationNumber}]
       </button>
 
-      {/* ── Tooltip ── */}
       {visible && (
         <div
           ref={tooltipRef}
@@ -202,14 +174,12 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
           onMouseEnter={() => setVisible(true)}
           onMouseLeave={hide}
         >
-          {/* Arrow */}
           <span
             className={`${styles.arrow} ${
               placement === 'bottom' ? styles.arrowBottom : styles.arrowTop
             }`}
           />
 
-          {/* Source badge */}
           <div className={styles.sourceBadge}>
             <SourceIcon />
             <span>{sourceLabel}</span>
@@ -220,24 +190,20 @@ export const CitationBadge: React.FC<CitationBadgeProps> = ({
             )}
           </div>
 
-          {/* Claim text */}
           <p className={styles.claimText}>{citation.claim_text}</p>
 
-          {/* Source excerpt nếu có */}
           {citation.source_excerpt && (
             <blockquote className={styles.excerpt}>
               "{citation.source_excerpt}"
             </blockquote>
           )}
 
-          {/* Source name */}
           {citation.source_name && (
             <div className={styles.sourceName}>
               📄 {citation.source_name}
             </div>
           )}
 
-          {/* Validation badge */}
           {citation.validation_status !== 'PENDING' && (
             <div
               className={`${styles.validationBadge} ${

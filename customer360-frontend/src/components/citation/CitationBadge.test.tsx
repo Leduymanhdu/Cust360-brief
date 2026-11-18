@@ -1,17 +1,9 @@
-// ============================================================
-// CitationBadge.test.tsx
-// KAN-20 – Unit tests cho CitationBadge component
-// Stack: Vitest + React Testing Library
-// ============================================================
-
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { CitationBadge } from './CitationBadge';
 import type { Citation } from '../../types/briefing';
-
-// ── Mock data ────────────────────────────────────────────────
 
 const mockPdfCitation: Citation = {
   id: 'cit-001',
@@ -34,8 +26,6 @@ const mockCommercialCitation: Citation = {
   source_name: 'SAP ERP',
   validation_status: 'PENDING',
 };
-
-// ── Tests ─────────────────────────────────────────────────────
 
 describe('CitationBadge', () => {
   describe('Rendering', () => {
@@ -129,7 +119,6 @@ describe('CitationBadge', () => {
       await user.click(badge);
       expect(screen.getByRole('tooltip')).toBeDefined();
 
-      // Move mouse away – tooltip should still be visible (pinned)
       fireEvent.mouseLeave(badge);
       await waitFor(() => {
         expect(screen.getByRole('tooltip')).toBeDefined();

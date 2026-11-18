@@ -1,8 +1,3 @@
-// ============================================================
-// CitationBadge.stories.tsx
-// KAN-20 – Storybook stories để demo & test citation tooltip
-// ============================================================
-
 import type { Meta, StoryObj } from '@storybook/react';
 import { CitationBadge } from './CitationBadge';
 import type { Citation } from '../../types/briefing';
@@ -25,8 +20,6 @@ const meta: Meta<typeof CitationBadge> = {
 
 export default meta;
 type Story = StoryObj<typeof CitationBadge>;
-
-// ── Mock data ────────────────────────────────────────────────
 
 const pdfCitation: Citation = {
   id: 'cit-001',
@@ -63,8 +56,6 @@ const invalidCitation: Citation = {
   page_number: 5,
   validation_status: 'INVALID',
 };
-
-// ── Stories ───────────────────────────────────────────────────
 
 export const PDFWithPageNumber: Story = {
   args: {
@@ -103,7 +94,6 @@ export const NotFound: Story = {
   },
 };
 
-// ── Inline usage demo ─────────────────────────────────────────
 export const InlineWithText: Story = {
   render: () => (
     <p style={{ maxWidth: 500, lineHeight: 1.7, fontFamily: 'sans-serif', fontSize: 14 }}>
