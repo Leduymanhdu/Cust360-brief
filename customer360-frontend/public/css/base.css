@@ -1,0 +1,212 @@
+/* Base Reset & Core Styles */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    font-family: inherit;
+    cursor: pointer;
+    border: none;
+    background: none;
+    outline: none;
+}
+
+input {
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+/* App Container */
+#app {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navbar / Header */
+.app-header {
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: 0.85rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    box-shadow: var(--shadow-sm);
+}
+
+.brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.brand-logo-icon {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.15rem;
+    box-shadow: 0 2px 4px rgba(30, 64, 175, 0.25);
+}
+
+.brand-text-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.brand-name {
+    font-weight: 700;
+    font-size: 1.15rem;
+    color: var(--color-text-main);
+    letter-spacing: -0.02em;
+}
+
+.brand-subtitle {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.user-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.35rem 0.75rem;
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+}
+
+.user-avatar-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.user-info-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+.user-role-tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 0.15rem 0.45rem;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-primary-light);
+    color: var(--color-primary);
+    text-transform: uppercase;
+}
+
+.btn-logout {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.85rem;
+    border-radius: var(--radius-md);
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid var(--color-border);
+    transition: all var(--transition-fast);
+}
+
+.btn-logout:hover {
+    background-color: var(--color-danger-bg);
+    color: var(--color-danger);
+    border-color: var(--color-danger-border);
+}
+
+/* Toast Notifications */
+.toast-container {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.25rem;
+    border-radius: var(--radius-md);
+    background: #ffffff;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+    font-size: 0.9rem;
+    animation: toastSlideIn 0.3s ease-out;
+    max-width: 400px;
+}
+
+.toast.toast-success {
+    border-left: 4px solid var(--color-success);
+}
+
+.toast.toast-error {
+    border-left: 4px solid var(--color-danger);
+}
+
+.toast.toast-warning {
+    border-left: 4px solid var(--color-warning);
+}
+
+@keyframes toastSlideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

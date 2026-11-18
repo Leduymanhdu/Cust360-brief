@@ -1,0 +1,18 @@
+{
+  "name": "customer360-frontend",
+  "version": "1.0.0",
+  "description": "Customer 360 Frontend - Giao diện Đăng nhập và Tìm kiếm tài khoản",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "customer360",
+    "login",
+    "search",
+    "enterprise-ui"
+  ],
+  "author": "Cust360 Team",
+  "license": "ISC"
+}
