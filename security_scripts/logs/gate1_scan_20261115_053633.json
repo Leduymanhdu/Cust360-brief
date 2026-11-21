@@ -1,0 +1,504 @@
+{
+  "scan_type": "gate1_pdf_validation",
+  "timestamp": "2026-11-15T05:36:33.618793",
+  "total_files": 9,
+  "passed": 5,
+  "failed": 4,
+  "results": [
+    {
+      "file": "Bien_ban_hop_01.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/Bien_ban_hop_01.pdf",
+      "timestamp": "2026-11-15T05:36:33.608175",
+      "overall_result": "PASS",
+      "checks": [
+        {
+          "name": "file_exists",
+          "passed": true,
+          "detail": "File tồn tại và đọc được"
+        },
+        {
+          "name": "magic_bytes",
+          "passed": true,
+          "detail": "Magic bytes hợp lệ (%PDF-)"
+        },
+        {
+          "name": "file_size",
+          "passed": true,
+          "detail": "Kích thước: 0.05 MB (giới hạn: 10 MB)"
+        },
+        {
+          "name": "pdf_open",
+          "passed": true,
+          "detail": "Mở file thành công"
+        },
+        {
+          "name": "page_count",
+          "passed": true,
+          "detail": "Số trang: 1 (giới hạn: 20)"
+        },
+        {
+          "name": "not_encrypted",
+          "passed": true,
+          "detail": "Không mã hóa"
+        },
+        {
+          "name": "no_javascript",
+          "passed": true,
+          "detail": "Không có JavaScript"
+        },
+        {
+          "name": "no_auto_actions",
+          "passed": true,
+          "detail": "Không có auto-actions"
+        },
+        {
+          "name": "no_embedded_files",
+          "passed": true,
+          "detail": "Không có embedded files"
+        }
+      ],
+      "fail_reasons": []
+    },
+    {
+      "file": "Hoa_don_INV-2026-303.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/Hoa_don_INV-2026-303.pdf",
+      "timestamp": "2026-11-15T05:36:33.610470",
+      "overall_result": "PASS",
+      "checks": [
+        {
+          "name": "file_exists",
+          "passed": true,
+          "detail": "File tồn tại và đọc được"
+        },
+        {
+          "name": "magic_bytes",
+          "passed": true,
+          "detail": "Magic bytes hợp lệ (%PDF-)"
+        },
+        {
+          "name": "file_size",
+          "passed": true,
+          "detail": "Kích thước: 0.05 MB (giới hạn: 10 MB)"
+        },
+        {
+          "name": "pdf_open",
+          "passed": true,
+          "detail": "Mở file thành công"
+        },
+        {
+          "name": "page_count",
+          "passed": true,
+          "detail": "Số trang: 1 (giới hạn: 20)"
+        },
+        {
+          "name": "not_encrypted",
+          "passed": true,
+          "detail": "Không mã hóa"
+        },
+        {
+          "name": "no_javascript",
+          "passed": true,
+          "detail": "Không có JavaScript"
+        },
+        {
+          "name": "no_auto_actions",
+          "passed": true,
+          "detail": "Không có auto-actions"
+        },
+        {
+          "name": "no_embedded_files",
+          "passed": true,
+          "detail": "Không có embedded files"
+        }
+      ],
+      "fail_reasons": []
+    },
+    {
+      "file": "Notes_NOTE-2026-001.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/Notes_NOTE-2026-001.pdf",
+      "timestamp": "2026-11-15T05:36:33.611558",
+      "overall_result": "PASS",
+      "checks": [
+        {
+          "name": "file_exists",
+          "passed": true,
+          "detail": "File tồn tại và đọc được"
+        },
+        {
+          "name": "magic_bytes",
+          "passed": true,
+          "detail": "Magic bytes hợp lệ (%PDF-)"
+        },
+        {
+          "name": "file_size",
+          "passed": true,
+          "detail": "Kích thước: 0.05 MB (giới hạn: 10 MB)"
+        },
+        {
+          "name": "pdf_open",
+          "passed": true,
+          "detail": "Mở file thành công"
+        },
+        {
+          "name": "page_count",
+          "passed": true,
+          "detail": "Số trang: 1 (giới hạn: 20)"
+        },
+        {
+          "name": "not_encrypted",
+          "passed": true,
+          "detail": "Không mã hóa"
+        },
+        {
+          "name": "no_javascript",
+          "passed": true,
+          "detail": "Không có JavaScript"
+        },
+        {
+          "name": "no_auto_actions",
+          "passed": true,
+          "detail": "Không có auto-actions"
+        },
+        {
+          "name": "no_embedded_files",
+          "passed": true,
+          "detail": "Không có embedded files"
+        }
+      ],
+      "fail_reasons": []
+    },
+    {
+      "file": "quotation-format.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/quotation-format.pdf",
+      "timestamp": "2026-11-15T05:36:33.612527",
+      "overall_result": "PASS",
+      "checks": [
+        {
+          "name": "file_exists",
+          "passed": true,
+          "detail": "File tồn tại và đọc được"
+        },
+        {
+          "name": "magic_bytes",
+          "passed": true,
+          "detail": "Magic bytes hợp lệ (%PDF-)"
+        },
+        {
+          "name": "file_size",
+          "passed": true,
+          "detail": "Kích thước: 0.04 MB (giới hạn: 10 MB)"
+        },
+        {
+          "name": "pdf_open",
+          "passed": true,
+          "detail": "Mở file thành công"
+        },
+        {
+          "name": "page_count",
+          "passed": true,
+          "detail": "Số trang: 1 (giới hạn: 20)"
+        },
+        {
+          "name": "not_encrypted",
+          "passed": true,
+          "detail": "Không mã hóa"
+        },
+        {
+          "name": "no_javascript",
+          "passed": true,
+          "detail": "Không có JavaScript"
+        },
+        {
+          "name": "no_auto_actions",
+          "passed": true,
+          "detail": "Không có auto-actions"
+        },
+        {
+          "name": "no_embedded_files",
+          "passed": true,
+          "detail": "Không có embedded files"
+        }
+      ],
+      "fail_reasons": []
+    },
+    {
+      "file": "tax-invoice-format.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/tax-invoice-format.pdf",
+      "timestamp": "2026-11-15T05:36:33.613753",
+      "overall_result": "PASS",
+      "checks": [
+        {
+          "name": "file_exists",
+          "passed": true,
+          "detail": "File tồn tại và đọc được"
+        },
+        {
+          "name": "magic_bytes",
+          "passed": true,
+          "detail": "Magic bytes hợp lệ (%PDF-)"
+        },
+        {
+          "name": "file_size",
+          "passed": true,
+          "detail": "Kích thước: 0.04 MB (giới hạn: 10 MB)"
+        },
+        {
+          "name": "pdf_open",
+          "passed": true,
+          "detail": "Mở file thành công"
+        },
+        {
+          "name": "page_count",
+          "passed": true,
+          "detail": "Số trang: 1 (giới hạn: 20)"
+        },
+        {
+          "name": "not_encrypted",
+          "passed": true,
+          "detail": "Không mã hóa"
+        },
+        {
+          "name": "no_javascript",
+          "passed": true,
+          "detail": "Không có JavaScript"
+        },
+        {
+          "name": "no_auto_actions",
+          "passed": true,
+          "detail": "Không có auto-actions"
+        },
+        {
+          "name": "no_embedded_files",
+          "passed": true,
+          "detail": "Không có embedded files"
+        }
+      ],
+      "fail_reasons": []
+    },
+    {
+      "file": "dirty_injection_test.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/dirty/dirty_injection_test.pdf",
+      "timestamp": "2026-11-15T05:36:33.614978",
+      "overall_result": "FAIL",
+      "checks": [
+        {
+          "name": "file_exists",
+          "passed": true,
+          "detail": "File tồn tại và đọc được"
+        },
+        {
+          "name": "magic_bytes",
+          "passed": true,
+          "detail": "Magic bytes hợp lệ (%PDF-)"
+        },
+        {
+          "name": "file_size",
+          "passed": true,
+          "detail": "Kích thước: 0.02 MB (giới hạn: 10 MB)"
+        },
+        {
+          "name": "pdf_open",
+          "passed": true,
+          "detail": "Mở file thành công"
+        },
+        {
+          "name": "page_count",
+          "passed": true,
+          "detail": "Số trang: 1 (giới hạn: 20)"
+        },
+        {
+          "name": "not_encrypted",
+          "passed": true,
+          "detail": "Không mã hóa"
+        },
+        {
+          "name": "no_javascript",
+          "passed": true,
+          "detail": "Không có JavaScript"
+        },
+        {
+          "name": "no_auto_actions",
+          "passed": false,
+          "detail": "Phát hiện auto-actions: xref 2: OpenAction (tự chạy khi mở)"
+        },
+        {
+          "name": "no_embedded_files",
+          "passed": true,
+          "detail": "Không có embedded files"
+        }
+      ],
+      "fail_reasons": [
+        "no_auto_actions: Phát hiện auto-actions: xref 2: OpenAction (tự chạy khi mở)"
+      ]
+    },
+    {
+      "file": "dirty_mixed_test.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/dirty/dirty_mixed_test.pdf",
+      "timestamp": "2026-11-15T05:36:33.615765",
+      "overall_result": "FAIL",
+      "checks": [
+        {
+          "name": "file_exists",
+          "passed": true,
+          "detail": "File tồn tại và đọc được"
+        },
+        {
+          "name": "magic_bytes",
+          "passed": true,
+          "detail": "Magic bytes hợp lệ (%PDF-)"
+        },
+        {
+          "name": "file_size",
+          "passed": true,
+          "detail": "Kích thước: 0.01 MB (giới hạn: 10 MB)"
+        },
+        {
+          "name": "pdf_open",
+          "passed": true,
+          "detail": "Mở file thành công"
+        },
+        {
+          "name": "page_count",
+          "passed": true,
+          "detail": "Số trang: 1 (giới hạn: 20)"
+        },
+        {
+          "name": "not_encrypted",
+          "passed": true,
+          "detail": "Không mã hóa"
+        },
+        {
+          "name": "no_javascript",
+          "passed": true,
+          "detail": "Không có JavaScript"
+        },
+        {
+          "name": "no_auto_actions",
+          "passed": false,
+          "detail": "Phát hiện auto-actions: xref 2: OpenAction (tự chạy khi mở)"
+        },
+        {
+          "name": "no_embedded_files",
+          "passed": true,
+          "detail": "Không có embedded files"
+        }
+      ],
+      "fail_reasons": [
+        "no_auto_actions: Phát hiện auto-actions: xref 2: OpenAction (tự chạy khi mở)"
+      ]
+    },
+    {
+      "file": "dirty_oversized_25pages.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/dirty/dirty_oversized_25pages.pdf",
+      "timestamp": "2026-11-15T05:36:33.616513",
+      "overall_result": "FAIL",
+      "checks": [
+        {
+          "name": "file_exists",
+          "passed": true,
+          "detail": "File tồn tại và đọc được"
+        },
+        {
+          "name": "magic_bytes",
+          "passed": true,
+          "detail": "Magic bytes hợp lệ (%PDF-)"
+        },
+        {
+          "name": "file_size",
+          "passed": true,
+          "detail": "Kích thước: 0.03 MB (giới hạn: 10 MB)"
+        },
+        {
+          "name": "pdf_open",
+          "passed": true,
+          "detail": "Mở file thành công"
+        },
+        {
+          "name": "page_count",
+          "passed": false,
+          "detail": "Vượt giới hạn trang: 25 > 20"
+        },
+        {
+          "name": "not_encrypted",
+          "passed": true,
+          "detail": "Không mã hóa"
+        },
+        {
+          "name": "no_javascript",
+          "passed": true,
+          "detail": "Không có JavaScript"
+        },
+        {
+          "name": "no_auto_actions",
+          "passed": false,
+          "detail": "Phát hiện auto-actions: xref 2: OpenAction (tự chạy khi mở)"
+        },
+        {
+          "name": "no_embedded_files",
+          "passed": true,
+          "detail": "Không có embedded files"
+        }
+      ],
+      "fail_reasons": [
+        "page_count: Vượt giới hạn trang: 25 > 20",
+        "no_auto_actions: Phát hiện auto-actions: xref 2: OpenAction (tự chạy khi mở)"
+      ]
+    },
+    {
+      "file": "dirty_pii_test.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/dirty/dirty_pii_test.pdf",
+      "timestamp": "2026-11-15T05:36:33.618179",
+      "overall_result": "FAIL",
+      "checks": [
+        {
+          "name": "file_exists",
+          "passed": true,
+          "detail": "File tồn tại và đọc được"
+        },
+        {
+          "name": "magic_bytes",
+          "passed": true,
+          "detail": "Magic bytes hợp lệ (%PDF-)"
+        },
+        {
+          "name": "file_size",
+          "passed": true,
+          "detail": "Kích thước: 0.02 MB (giới hạn: 10 MB)"
+        },
+        {
+          "name": "pdf_open",
+          "passed": true,
+          "detail": "Mở file thành công"
+        },
+        {
+          "name": "page_count",
+          "passed": true,
+          "detail": "Số trang: 1 (giới hạn: 20)"
+        },
+        {
+          "name": "not_encrypted",
+          "passed": true,
+          "detail": "Không mã hóa"
+        },
+        {
+          "name": "no_javascript",
+          "passed": true,
+          "detail": "Không có JavaScript"
+        },
+        {
+          "name": "no_auto_actions",
+          "passed": false,
+          "detail": "Phát hiện auto-actions: xref 2: OpenAction (tự chạy khi mở)"
+        },
+        {
+          "name": "no_embedded_files",
+          "passed": true,
+          "detail": "Không có embedded files"
+        }
+      ],
+      "fail_reasons": [
+        "no_auto_actions: Phát hiện auto-actions: xref 2: OpenAction (tự chạy khi mở)"
+      ]
+    }
+  ]
+}
