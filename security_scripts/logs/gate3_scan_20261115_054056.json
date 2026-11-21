@@ -1,0 +1,445 @@
+{
+  "scan_type": "gate3_pii_mask",
+  "timestamp": "2026-11-15T05:40:56.316690",
+  "total_files": 10,
+  "total_pii_found": 18,
+  "total_masked": 17,
+  "total_kept": 0,
+  "results": [
+    {
+      "file": "Bien_ban_hop_01.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/Bien_ban_hop_01.pdf",
+      "file_type": ".pdf",
+      "timestamp": "2026-11-15T05:40:56.257289",
+      "overall_result": "PASS",
+      "findings": [],
+      "summary": {
+        "total_pii": 0,
+        "masked": 0,
+        "kept": 0,
+        "flagged": 0,
+        "by_type": {}
+      },
+      "masked_output": null
+    },
+    {
+      "file": "Hoa_don_INV-2026-303.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/Hoa_don_INV-2026-303.pdf",
+      "file_type": ".pdf",
+      "timestamp": "2026-11-15T05:40:56.266929",
+      "overall_result": "PASS",
+      "findings": [],
+      "summary": {
+        "total_pii": 0,
+        "masked": 0,
+        "kept": 0,
+        "flagged": 0,
+        "by_type": {}
+      },
+      "masked_output": null
+    },
+    {
+      "file": "Notes_NOTE-2026-001.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/Notes_NOTE-2026-001.pdf",
+      "file_type": ".pdf",
+      "timestamp": "2026-11-15T05:40:56.271165",
+      "overall_result": "PASS",
+      "findings": [],
+      "summary": {
+        "total_pii": 0,
+        "masked": 0,
+        "kept": 0,
+        "flagged": 0,
+        "by_type": {}
+      },
+      "masked_output": null
+    },
+    {
+      "file": "quotation-format.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/quotation-format.pdf",
+      "file_type": ".pdf",
+      "timestamp": "2026-11-15T05:40:56.274756",
+      "overall_result": "PASS",
+      "findings": [],
+      "summary": {
+        "total_pii": 0,
+        "masked": 0,
+        "kept": 0,
+        "flagged": 0,
+        "by_type": {}
+      },
+      "masked_output": null
+    },
+    {
+      "file": "tax-invoice-format.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/clean/tax-invoice-format.pdf",
+      "file_type": ".pdf",
+      "timestamp": "2026-11-15T05:40:56.277736",
+      "overall_result": "PASS",
+      "findings": [],
+      "summary": {
+        "total_pii": 0,
+        "masked": 0,
+        "kept": 0,
+        "flagged": 0,
+        "by_type": {}
+      },
+      "masked_output": null
+    },
+    {
+      "file": "contacts_with_pii.csv",
+      "filepath": "/home/claude/security_scripts/test_data/csv_samples/contacts_with_pii.csv",
+      "file_type": ".csv",
+      "timestamp": "2026-11-15T05:40:56.280123",
+      "overall_result": "PII_FOUND",
+      "findings": [
+        {
+          "rule_id": "PII-01",
+          "type": "phone_personal",
+          "matched_text": "0909123456",
+          "position": {
+            "start": 0,
+            "end": 10
+          },
+          "mask_value": "***-***-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "row": 1,
+          "column": "phone"
+        },
+        {
+          "rule_id": "PII-02",
+          "type": "email_personal",
+          "matched_text": "an.nguyen@gmail.com",
+          "position": {
+            "start": 0,
+            "end": 19
+          },
+          "mask_value": "***@***.***",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "row": 1,
+          "column": "email"
+        },
+        {
+          "rule_id": "PII-01",
+          "type": "phone_personal",
+          "matched_text": "0387654321",
+          "position": {
+            "start": 0,
+            "end": 10
+          },
+          "mask_value": "***-***-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "row": 2,
+          "column": "phone"
+        },
+        {
+          "rule_id": "PII-01",
+          "type": "phone_personal",
+          "matched_text": "+84912345678",
+          "position": {
+            "start": 0,
+            "end": 12
+          },
+          "mask_value": "***-***-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "row": 3,
+          "column": "phone"
+        },
+        {
+          "rule_id": "PII-02",
+          "type": "email_personal",
+          "matched_text": "nam.le@hotmail.com",
+          "position": {
+            "start": 0,
+            "end": 18
+          },
+          "mask_value": "***@***.***",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "row": 3,
+          "column": "email"
+        },
+        {
+          "rule_id": "PII-01",
+          "type": "phone_personal",
+          "matched_text": "0398765432",
+          "position": {
+            "start": 0,
+            "end": 10
+          },
+          "mask_value": "***-***-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "row": 3,
+          "column": "tax_number"
+        },
+        {
+          "rule_id": "PII-01",
+          "type": "phone_personal",
+          "matched_text": "0776543210",
+          "position": {
+            "start": 0,
+            "end": 10
+          },
+          "mask_value": "***-***-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "row": 5,
+          "column": "phone"
+        },
+        {
+          "rule_id": "PII-02",
+          "type": "email_personal",
+          "matched_text": "duc.pham@yahoo.com",
+          "position": {
+            "start": 0,
+            "end": 18
+          },
+          "mask_value": "***@***.***",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "row": 5,
+          "column": "email"
+        }
+      ],
+      "summary": {
+        "total_pii": 8,
+        "masked": 8,
+        "kept": 0,
+        "flagged": 0,
+        "by_type": {
+          "phone_personal": 5,
+          "email_personal": 3
+        }
+      },
+      "masked_output": "/home/claude/security_scripts/test_data/masked_output/contacts_with_pii_masked.csv"
+    },
+    {
+      "file": "dirty_injection_test.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/dirty/dirty_injection_test.pdf",
+      "file_type": ".pdf",
+      "timestamp": "2026-11-15T05:40:56.281662",
+      "overall_result": "PASS",
+      "findings": [],
+      "summary": {
+        "total_pii": 0,
+        "masked": 0,
+        "kept": 0,
+        "flagged": 0,
+        "by_type": {}
+      },
+      "masked_output": null
+    },
+    {
+      "file": "dirty_mixed_test.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/dirty/dirty_mixed_test.pdf",
+      "file_type": ".pdf",
+      "timestamp": "2026-11-15T05:40:56.288012",
+      "overall_result": "PII_FOUND",
+      "findings": [
+        {
+          "rule_id": "PII-01",
+          "type": "phone_personal",
+          "matched_text": "Zalo 0912345678",
+          "position": {
+            "start": 276,
+            "end": 291
+          },
+          "mask_value": "***-***-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        },
+        {
+          "rule_id": "PII-04",
+          "type": "bank_account",
+          "matched_text": "Tài khoản thanh toán: VCB 0071 0012 3456 78",
+          "position": {
+            "start": 305,
+            "end": 348
+          },
+          "mask_value": "TK: ****-****-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        }
+      ],
+      "summary": {
+        "total_pii": 2,
+        "masked": 2,
+        "kept": 0,
+        "flagged": 0,
+        "by_type": {
+          "phone_personal": 1,
+          "bank_account": 1
+        }
+      },
+      "masked_output": null
+    },
+    {
+      "file": "dirty_oversized_25pages.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/dirty/dirty_oversized_25pages.pdf",
+      "file_type": ".pdf",
+      "timestamp": "2026-11-15T05:40:56.290013",
+      "overall_result": "PASS",
+      "findings": [],
+      "summary": {
+        "total_pii": 0,
+        "masked": 0,
+        "kept": 0,
+        "flagged": 0,
+        "by_type": {}
+      },
+      "masked_output": null
+    },
+    {
+      "file": "dirty_pii_test.pdf",
+      "filepath": "/home/claude/security_scripts/test_data/dirty/dirty_pii_test.pdf",
+      "file_type": ".pdf",
+      "timestamp": "2026-11-15T05:40:56.315021",
+      "overall_result": "PII_FOUND",
+      "findings": [
+        {
+          "rule_id": "PII-01",
+          "type": "phone_personal",
+          "matched_text": "Zalo: 0776543210",
+          "position": {
+            "start": 331,
+            "end": 347
+          },
+          "mask_value": "***-***-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        },
+        {
+          "rule_id": "PII-01",
+          "type": "phone_personal",
+          "matched_text": "079 203 012",
+          "position": {
+            "start": 505,
+            "end": 516
+          },
+          "mask_value": "***-***-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        },
+        {
+          "rule_id": "PII-02",
+          "type": "email_personal",
+          "matched_text": "an.nguyen@gmail.com",
+          "position": {
+            "start": 121,
+            "end": 140
+          },
+          "mask_value": "***@***.***",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        },
+        {
+          "rule_id": "PII-02",
+          "type": "email_personal",
+          "matched_text": "binh_tran@yahoo.com.vn",
+          "position": {
+            "start": 191,
+            "end": 213
+          },
+          "mask_value": "***@***.***",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        },
+        {
+          "rule_id": "PII-02",
+          "type": "email_personal",
+          "matched_text": "nam.le.personal@hotmail.com",
+          "position": {
+            "start": 284,
+            "end": 311
+          },
+          "mask_value": "***@***.***",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        },
+        {
+          "rule_id": "PII-03",
+          "type": "cccd",
+          "matched_text": "CCCD: 079 203 012 345",
+          "position": {
+            "start": 499,
+            "end": 520
+          },
+          "mask_value": "CCCD: ***-***-***-***",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        },
+        {
+          "rule_id": "PII-04",
+          "type": "bank_account",
+          "matched_text": "TK ngân hàng: 1234 5678 9012",
+          "position": {
+            "start": 437,
+            "end": 465
+          },
+          "mask_value": "TK: ****-****-****",
+          "action": "mask",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        },
+        {
+          "rule_id": "PII-05",
+          "type": "tax_number_personal",
+          "matched_text": "MST: 0312345678",
+          "position": {
+            "start": 397,
+            "end": 412
+          },
+          "mask_value": "MST: ***-***-****",
+          "action": "flag",
+          "whitelisted": false,
+          "whitelist_reason": null,
+          "page": 1
+        }
+      ],
+      "summary": {
+        "total_pii": 8,
+        "masked": 7,
+        "kept": 0,
+        "flagged": 1,
+        "by_type": {
+          "phone_personal": 2,
+          "email_personal": 3,
+          "cccd": 1,
+          "bank_account": 1,
+          "tax_number_personal": 1
+        }
+      },
+      "masked_output": null
+    }
+  ]
+}
