@@ -1,5 +1,70 @@
 export type AccountStatus = "Active" | "Inactive";
 
+/** Status values returned by the account/briefing API. */
+export type ApiAccountStatus = "ACTIVE" | "INACTIVE";
+export type BriefingStatus = "GENERATING" | "COMPLETED" | "FAILED" | "BLOCKED";
+export type CitationSourceType = "PDF" | "COMMERCIAL";
+export type CitationValidationStatus = "PENDING" | "VALID" | "INVALID" | "REJECTED";
+
+export interface ApiSite {
+  id: string;
+  accountId: string;
+  siteName: string;
+  address: string;
+}
+
+export interface ApiAccount {
+  id: string;
+  legalName: string;
+  taxCode: string;
+  industry: string;
+  status: ApiAccountStatus;
+  hasPermission: boolean;
+  sites?: ApiSite[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Citation {
+  id: string;
+  briefingId: string;
+  citationNumber: number;
+  claimText: string;
+  sourceType: CitationSourceType;
+  sourceExcerpt?: string;
+  validationStatus: CitationValidationStatus;
+}
+
+export interface ApiBriefing {
+  id: string;
+  accountId: string;
+  siteId?: string | null;
+  generatedBy: string;
+  briefingStatus: BriefingStatus;
+  isStale: boolean;
+  sections: {
+    companyOverview?: string;
+    commercialSummary?: string;
+    riskWarnings?: string[];
+    recentActivities?: string[];
+  };
+  citations: Citation[];
+  freshnessStatus: string;
+  validationStatus: string;
+  createdAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  userId: string;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  ipAddress?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
 export type InteractionType =
   | "Meeting"
   | "Call"
