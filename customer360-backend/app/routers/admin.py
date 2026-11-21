@@ -1,110 +1,92 @@
-import csv
-import io
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    File,
+    HTTPException,
+    UploadFile,
+    status,
+)
 
 from app.mock_data import ACCOUNTS, DEMO_USERS
 from app.schemas import (
     ErrorResponse,
+    ImportFileKind,
     ImportJobResponse,
     RevokeAccessRequest,
     RevokeAccessResponse,
 )
 from app.security import require_admin
+from app.services import import_service
 
 router = APIRouter(prefix="/admin", tags=["Administration"])
-MAX_UPLOAD_BYTES = 10 * 1024 * 1024
-CSV_CONTENT_TYPES = {
-    "text/csv",
-    "application/csv",
-    "application/vnd.ms-excel",
-    "application/octet-stream",
-}
-INJECTION_TERMS = (
-    "ignore previous instructions",
-    "system prompt",
-    "reveal your instructions",
-)
-
-
-async def _read_upload(file: UploadFile, allowed_types: set[str]) -> bytes:
-    if file.content_type not in allowed_types:
-        raise HTTPException(
-            status_code=400,
-            detail="Unsupported file content type.",
-        )
-    content = await file.read(MAX_UPLOAD_BYTES + 1)
-    if len(content) > MAX_UPLOAD_BYTES:
-        raise HTTPException(status_code=413, detail="File exceeds the 10 MiB limit.")
-    return content
 
 
 @router.post(
     "/import/csv",
     response_model=ImportJobResponse,
-    summary="Upload a CSV file for asynchronous import",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Upload a CSV file and queue an import job",
     responses={
         400: {"model": ErrorResponse, "description": "Unsupported or invalid CSV file."},
         401: {"model": ErrorResponse, "description": "Authentication required."},
         403: {"model": ErrorResponse, "description": "Administrator role required."},
-        413: {"model": ErrorResponse, "description": "File exceeds the 10 MiB limit."},
+        413: {"model": ErrorResponse, "description": "File exceeds the configured limit."},
+        500: {"model": ErrorResponse, "description": "Stored file could not be written."},
     },
 )
 async def import_csv(
-    file: UploadFile = File(..., description="UTF-8 CSV file; maximum size 10 MiB."),
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(..., description="UTF-8 CSV file within the configured size limit."),
     _admin: dict = Depends(require_admin),
 ) -> ImportJobResponse:
-    """Validate a CSV payload and return a mock processing job."""
-    if not file.filename or not file.filename.lower().endswith(".csv"):
-        raise HTTPException(status_code=400, detail="A .csv file is required.")
-    content = await _read_upload(file, CSV_CONTENT_TYPES)
-    try:
-        text = content.decode("utf-8-sig")
-        rows = list(csv.reader(io.StringIO(text)))
-    except (UnicodeDecodeError, csv.Error) as exc:
-        raise HTTPException(status_code=400, detail="CSV must be valid UTF-8.") from exc
-    if not rows:
-        raise HTTPException(status_code=400, detail="CSV file is empty.")
-    return ImportJobResponse(
-        job_id=uuid4(),
-        records_received=max(len(rows) - 1, 0),
-        message="CSV accepted. Persistence and background processing are mocked.",
-    )
+    """Validate and store a CSV upload, then queue it for import processing."""
+    return await import_service.start_import(file, ImportFileKind.CSV, background_tasks)
 
 
 @router.post(
     "/import/pdf",
     response_model=ImportJobResponse,
-    summary="Upload a PDF file for text extraction and safety scanning",
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Upload a PDF file and queue an import job",
     responses={
         400: {"model": ErrorResponse, "description": "Unsupported or invalid PDF file."},
         401: {"model": ErrorResponse, "description": "Authentication required."},
         403: {"model": ErrorResponse, "description": "Administrator role required."},
-        413: {"model": ErrorResponse, "description": "File exceeds the 10 MiB limit."},
+        413: {"model": ErrorResponse, "description": "File exceeds the configured limit."},
+        500: {"model": ErrorResponse, "description": "Stored file could not be written."},
     },
 )
 async def import_pdf(
-    file: UploadFile = File(..., description="PDF file; maximum size 10 MiB."),
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(..., description="PDF file within the configured size limit."),
     _admin: dict = Depends(require_admin),
 ) -> ImportJobResponse:
-    """Check PDF signature and flag obvious prompt-injection language."""
-    if not file.filename or not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(status_code=400, detail="A .pdf file is required.")
-    content = await _read_upload(file, {"application/pdf"})
-    if not content.startswith(b"%PDF-"):
-        raise HTTPException(status_code=400, detail="File does not have a valid PDF signature.")
-    decoded = content.decode("latin-1", errors="ignore").casefold()
-    flagged = any(term in decoded for term in INJECTION_TERMS)
-    return ImportJobResponse(
-        job_id=uuid4(),
-        records_received=1,
-        message=(
-            "PDF accepted and flagged for quarantine review."
-            if flagged
-            else "PDF accepted. Text extraction and storage are mocked."
-        ),
-    )
+    """Validate and store a PDF upload, then queue it for import processing."""
+    return await import_service.start_import(file, ImportFileKind.PDF, background_tasks)
+
+
+@router.get(
+    "/imports/{job_id}",
+    response_model=ImportJobResponse,
+    summary="Get the status and metadata of an import job",
+    responses={
+        401: {"model": ErrorResponse, "description": "Authentication required."},
+        403: {"model": ErrorResponse, "description": "Administrator role required."},
+        404: {"model": ErrorResponse, "description": "Import job not found."},
+    },
+)
+def get_import_job(
+    job_id: UUID,
+    _admin: dict = Depends(require_admin),
+) -> ImportJobResponse:
+    """Return the current import status and stored-file metadata for one job."""
+    job = import_service.get_import_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="Import job not found.")
+    return job
 
 
 @router.post(

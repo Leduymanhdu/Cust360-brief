@@ -190,8 +190,36 @@ CREATE TABLE audit_logs (
 );
 
 -- =====================================================
+-- 10. BẢNG IMPORT_JOBS (Metadata file upload & trạng thái import)
+-- =====================================================
+CREATE TABLE import_jobs (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    uploaded_by UUID NOT NULL,
+    file_kind VARCHAR(10) NOT NULL CHECK (file_kind IN ('CSV', 'PDF')),
+    file_name VARCHAR(500) NOT NULL,
+    content_type VARCHAR(150) NOT NULL,
+    storage_path VARCHAR(1000) NOT NULL,
+    size_bytes BIGINT NOT NULL CHECK (size_bytes >= 0),
+    checksum_sha256 CHAR(64) NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING'
+        CHECK (status IN ('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED')),
+    records_received INTEGER NOT NULL DEFAULT 0 CHECK (records_received >= 0),
+    warnings JSONB NOT NULL DEFAULT '[]'::jsonb,
+    error_message TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    completed_at TIMESTAMPTZ,
+    
+    CONSTRAINT fk_import_user FOREIGN KEY (uploaded_by) 
+        REFERENCES users(id) ON DELETE RESTRICT
+);
+
+-- =====================================================
 -- TẠO INDEX ĐỂ TĂNG TỐC TRUY VẤN (Theo yêu cầu NFR)
 -- =====================================================
+CREATE INDEX idx_import_jobs_status ON import_jobs(status, created_at DESC);
+CREATE INDEX idx_import_jobs_user ON import_jobs(uploaded_by, created_at DESC);
+CREATE INDEX idx_import_jobs_checksum ON import_jobs(checksum_sha256);
 CREATE INDEX idx_accounts_legal_name ON accounts USING gin(to_tsvector('simple', legal_name));
 CREATE INDEX idx_commercial_account_date ON commercial_records(account_id, record_date);
 CREATE INDEX idx_pdf_account ON pdf_text(account_id);
