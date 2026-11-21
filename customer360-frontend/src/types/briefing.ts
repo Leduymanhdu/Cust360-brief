@@ -6,6 +6,52 @@ export type BriefingStatus = "GENERATING" | "COMPLETED" | "FAILED" | "BLOCKED";
 export type CitationSourceType = "PDF" | "COMMERCIAL";
 export type CitationValidationStatus = "PENDING" | "VALID" | "INVALID" | "REJECTED";
 
+/** Citation tooltip API model (snake_case response fields). */
+export type SourceType = CitationSourceType;
+export type ValidationStatus = CitationValidationStatus;
+
+export interface TooltipCitation {
+  id: string;
+  briefing_id: string;
+  citation_number: number;
+  claim_text: string;
+  source_type: SourceType;
+  source_name: string;
+  page_number?: number;
+  source_excerpt?: string;
+  validation_status: ValidationStatus;
+}
+
+export type CitationMap = Record<number, TooltipCitation>;
+
+export interface BriefingStatement {
+  text: string;
+  citation_numbers: number[];
+}
+
+export interface TooltipBriefingSection {
+  title: string;
+  statements: BriefingStatement[];
+}
+
+export interface TooltipBriefing {
+  id: string;
+  account_id: string;
+  site_id?: string;
+  generated_by: string;
+  briefing_status: BriefingStatus;
+  sections: TooltipBriefingSection[];
+  is_stale: boolean;
+  validation_status: ValidationStatus;
+  created_at: string;
+  completed_at?: string;
+}
+
+export interface CitationsResponse {
+  briefing_id: string;
+  citations: TooltipCitation[];
+}
+
 export interface ApiSite {
   id: string;
   accountId: string;
