@@ -5,9 +5,10 @@ request/response models, bearer-auth scheme, mô tả lỗi, trạng thái HTTP 
 để frontend có thể bắt đầu tích hợp bằng dữ liệu mẫu.
 
 > **Chế độ mock:** API lưu file upload xuống đĩa cục bộ và giữ trạng thái import
-> trong bộ nhớ. Đăng nhập không phát hành JWT thật; tạo briefing, ghi database và
-> xóa cache Redis đều là mô phỏng. Không dùng bản này với dữ liệu khách hàng hoặc
-> triển khai production.
+> trong bộ nhớ. Đăng nhập không phát hành JWT thật; tạo briefing, đọc/ghi dữ liệu
+> nghiệp vụ và xóa cache Redis đều là mô phỏng. PostgreSQL và Alembic đã được thiết
+> lập nhưng các endpoint nghiệp vụ chưa đọc/ghi database. Không dùng bản này với dữ
+> liệu khách hàng hoặc triển khai production.
 
 ## Chạy cục bộ
 
@@ -23,6 +24,9 @@ uvicorn app.main:app --reload
 
 Mở Swagger UI tại [http://localhost:8000/docs](http://localhost:8000/docs);
 ReDoc tại `/redoc`; OpenAPI JSON tại `/openapi.json`.
+
+API đọc cấu hình database từ biến môi trường; xem mục
+[Cơ sở dữ liệu PostgreSQL](#cơ-sở-dữ-liệu-postgresql) để khởi tạo và chạy migration.
 
 ## Hướng dẫn Swagger cho Frontend
 
@@ -98,6 +102,7 @@ tự chọn hay gộp account.
 | `GET` | `/api/v1/admin/imports/{job_id}` | ADMIN | Lấy metadata file và trạng thái import |
 | `POST` | `/api/v1/admin/users/{user_id}/revoke-access` | ADMIN | Mô phỏng thu hồi account scope |
 | `GET` | `/health` | Public | Liveness check |
+| `GET` | `/health/db` | Public | Kiểm tra kết nối PostgreSQL (`503` nếu không kết nối được) |
 
 `BriefingSections` luôn mô tả đủ các key: `account_and_site`,
 `contacts_and_roles`, `recent_interactions`, `commercial_facts`,
@@ -140,8 +145,61 @@ Cấu hình bằng biến môi trường trước khi chạy API:
 | `UPLOAD_DIR` | `var/uploads` | Thư mục lưu file đã upload |
 | `UPLOAD_CHUNK_SIZE` | `1048576` (1 MiB) | Kích thước mỗi lần đọc khi ghi file |
 
-Bảng `import_jobs` trong `database/init.sql` là schema đích cho metadata và trạng
-thái import khi kết nối PostgreSQL.
+Bảng `import_jobs` trong migration `alembic/versions/0001_initial_schema.py` là
+schema đích cho metadata và trạng thái import khi kết nối PostgreSQL.
+
+## Cơ sở dữ liệu PostgreSQL
+
+Schema do Alembic quản lý; migration là nguồn duy nhất. Cấu hình lấy từ biến môi
+trường, không hard-code trong `alembic.ini`.
+
+### Khởi tạo môi trường development
+
+```powershell
+cd "D:\project HKDN\Cust360-brief\customer360-backend"
+Copy-Item .env.example .env
+docker compose up -d postgres
+python -m pip install -r requirements.txt
+alembic upgrade head
+```
+
+Kiểm tra kết nối sau khi chạy API:
+
+```powershell
+curl http://localhost:8000/health/db
+# {"database":"ok"}
+```
+
+### Biến môi trường
+
+| Biến | Mặc định (development) | Ý nghĩa |
+| --- | --- | --- |
+| `APP_ENV` | `development` | `development` hoặc `production` |
+| `DATABASE_URL` | URL Postgres local | Chuỗi kết nối SQLAlchemy, ưu tiên cao nhất |
+| `POSTGRES_HOST` | trống | Nếu không có `DATABASE_URL`, URL được ghép từ `POSTGRES_HOST/PORT/USER/PASSWORD/DB` |
+| `POSTGRES_PORT` | `5432` | Cổng PostgreSQL |
+| `POSTGRES_USER` | `customer360` | Tài khoản kết nối |
+| `POSTGRES_PASSWORD` | trống | Mật khẩu kết nối |
+| `POSTGRES_DB` | `customer360` | Tên database |
+| `SQL_ECHO` | `false` | Log mọi câu SQL (chỉ nên bật ở development) |
+| `DB_CONNECT_TIMEOUT` | `5` | Số giây tối đa cho một lần kết nối tới PostgreSQL |
+
+Thứ tự ưu tiên khi resolve URL: `DATABASE_URL` → các biến `POSTGRES_*` → mặc định
+development. Khi `APP_ENV=production` mà chưa cấu hình gì, ứng dụng dừng ngay khi
+khởi động để tránh vô tình dùng thông tin đăng nhập development.
+
+### Migration
+
+```powershell
+alembic upgrade head            # áp dụng toàn bộ migration
+alembic current                 # revision đang áp dụng
+alembic history                 # danh sách revision
+alembic downgrade -1            # lùi một revision
+alembic upgrade head --sql      # sinh SQL ra stdout, không cần kết nối DB
+```
+
+Thêm migration mới bằng cách tạo file trong `alembic/versions/`; đặt `down_revision`
+trỏ về revision trước đó.
 
 ## Docker
 
@@ -149,9 +207,11 @@ thái import khi kết nối PostgreSQL.
 docker compose up --build
 ```
 
-Compose khởi động API, PostgreSQL và Redis để dựng môi trường phát triển. API
-mock hiện chưa kết nối tới PostgreSQL/Redis; schema ban đầu nằm tại
-`database/init.sql`.
+Compose khởi động PostgreSQL (có healthcheck), Redis và API. Trước khi chạy
+`uvicorn`, container API tự chạy `alembic upgrade head` nên schema luôn ở revision
+mới nhất. Ứng dụng dùng `app/database.py` (engine, session, `ping_database`) và
+`GET /health/db` để xác nhận kết nối; các endpoint nghiệp vụ vẫn dùng dữ liệu mock
+cho tới khi phần đọc/ghi PostgreSQL được ghép nối.
 
 ## Kiểm thử
 

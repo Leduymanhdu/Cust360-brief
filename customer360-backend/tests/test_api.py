@@ -1,11 +1,15 @@
 import asyncio
+import socket
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
 import httpx
 import pytest
+from sqlalchemy.engine import make_url
+from sqlalchemy.exc import OperationalError
 
+import app.main as main_module
 from app import config
 from app.main import app
 from app.mock_data import (
@@ -348,3 +352,57 @@ def test_seeded_user_id_is_stable() -> None:
         json={"email": "sales@songnhat.com.vn", "password": "SecurePass123!"},
     )
     assert login.json()["user"]["id"] == str(SALES_USER_ID)
+
+
+def test_database_url_prefers_explicit_configuration() -> None:
+    explicit = "postgresql+psycopg://app:secret@db:5432/customer360"
+    assert config.build_database_url({"DATABASE_URL": explicit}) == explicit
+
+
+def test_database_url_is_assembled_from_postgres_parts() -> None:
+    url = config.build_database_url(
+        {
+            "POSTGRES_HOST": "db.internal",
+            "POSTGRES_PORT": "6543",
+            "POSTGRES_USER": "app",
+            "POSTGRES_PASSWORD": "p@ss word",
+            "POSTGRES_DB": "customer360",
+        }
+    )
+    assert url == "postgresql+psycopg://app:p%40ss+word@db.internal:6543/customer360"
+
+
+def test_database_url_falls_back_to_development_default() -> None:
+    assert config.build_database_url({}) == config.DEV_DATABASE_URL
+
+
+def test_database_url_requires_configuration_in_production() -> None:
+    with pytest.raises(RuntimeError):
+        config.build_database_url({"APP_ENV": "production"})
+
+
+def test_database_health_reports_unreachable_database(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def unreachable() -> None:
+        raise OperationalError("SELECT 1", {}, Exception("connection refused"))
+
+    monkeypatch.setattr(main_module, "ping_database", unreachable)
+    response = request("GET", "/health/db")
+    assert response.status_code == 503
+    assert response.json()["detail"] == "PostgreSQL is unreachable."
+
+
+def test_database_health_reports_reachable_database() -> None:
+    url = make_url(config.DATABASE_URL)
+    try:
+        with socket.create_connection(
+            (url.host or "localhost", url.port or 5432),
+            timeout=0.5,
+        ):
+            pass
+    except OSError:
+        pytest.skip("PostgreSQL is not reachable in this environment.")
+    response = request("GET", "/health/db")
+    assert response.status_code == 200
+    assert response.json() == {"database": "ok"}
