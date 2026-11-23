@@ -1,0 +1,126 @@
+{
+  "_description": "Injection patterns for Gate 2 scanner. Grouped by category.",
+  "_rfp_ref": "SEC 04 (scan hidden instructions), ACC 06 (treat embedded instructions as data)",
+  "_note": "Patterns are regex. Flags: IGNORECASE applied globally. Vietnamese + English.",
+
+  "patterns": [
+    {
+      "id": "INJ-01",
+      "category": "direct_override",
+      "description": "Cố gắng ghi đè system instructions",
+      "patterns_en": [
+        "ignore (all )?previous (instructions|context|rules|prompts|guidelines)",
+        "ignore (all )?prior (instructions|context|rules|prompts|guidelines)",
+        "disregard (all )?(previous|prior|above) (instructions|rules|guidelines)",
+        "forget (all )?(previous|prior) (instructions|context|rules)",
+        "override (all )?(previous|prior|system) (instructions|rules|settings)"
+      ],
+      "patterns_vi": [
+        "bỏ qua (tất cả )?hướng dẫn trước",
+        "bỏ qua (tất cả )?(quy tắc|chỉ thị) trước đó",
+        "hãy quên (tất cả )?hướng dẫn",
+        "ghi đè (tất cả )?(quy tắc|hướng dẫn|cài đặt)"
+      ],
+      "severity": "HIGH"
+    },
+    {
+      "id": "INJ-02",
+      "category": "role_hijacking",
+      "description": "Gán vai trò mới cho AI để bypass controls",
+      "patterns_en": [
+        "you are now (?:a |an )?(?:new |different )?(?:assistant|helper|admin|system)",
+        "act as (?:a |an )?(?:unrestricted|unfiltered|admin|root)",
+        "pretend (?:you are|to be) (?:a |an )?(?:different|new|unrestricted)",
+        "switch (?:to|into) (?:a |an )?(?:admin|root|unrestricted|DAN) mode",
+        "enter (?:admin|developer|debug|unrestricted|DAN) mode"
+      ],
+      "patterns_vi": [
+        "bạn (?:bây giờ|giờ) là (?:một )?(?:trợ lý|admin|quản trị)",
+        "hãy đóng vai (?:một )?(?:admin|quản trị|hệ thống)",
+        "chuyển sang chế độ (?:admin|quản trị|không giới hạn)"
+      ],
+      "severity": "HIGH"
+    },
+    {
+      "id": "INJ-03",
+      "category": "system_prompt_extraction",
+      "description": "Cố trích xuất system prompt hoặc cấu hình nội bộ",
+      "patterns_en": [
+        "(?:print|show|display|reveal|output|repeat) (?:your |the )?system (?:prompt|instructions|message|configuration)",
+        "what (?:are|is) your (?:system )?(?:prompt|instructions|rules|guidelines)",
+        "show (?:me )?(?:your |the )?(?:hidden|internal|secret) (?:instructions|prompt|rules)"
+      ],
+      "patterns_vi": [
+        "(?:hiển thị|in ra|cho xem|xuất) (?:system |hệ thống )?(?:prompt|hướng dẫn|cấu hình)",
+        "(?:prompt|hướng dẫn|chỉ thị) hệ thống (?:của bạn )?là gì"
+      ],
+      "severity": "HIGH"
+    },
+    {
+      "id": "INJ-04",
+      "category": "data_exfiltration",
+      "description": "Cố trích xuất dữ liệu từ context khác",
+      "patterns_en": [
+        "(?:send|email|forward|transmit|extract) (?:all |the )?(?:data|information|records|details) (?:to|from)",
+        "summarize (?:all )?(?:confidential|restricted|private|internal) (?:data|pricing|information|records)",
+        "output (?:the )?(?:full |entire |complete )?(?:customer|client|user|account) (?:data|information|records|database|list)",
+        "(?:list|show|reveal) (?:all )?(?:other )?(?:customer|client|account|user)(?:'?s?) (?:data|information|records|database)",
+        "(?:access|retrieve|fetch|get) (?:restricted|confidential|private) (?:data|information|files|records)"
+      ],
+      "patterns_vi": [
+        "(?:gửi|chuyển|trích xuất) (?:tất cả )?(?:dữ liệu|thông tin) (?:đến|từ|cho)",
+        "(?:tóm tắt|liệt kê|hiển thị) (?:tất cả )?(?:bảo mật|nội bộ|hạn chế) (?:dữ liệu|thông tin|giá)",
+        "(?:truy cập|lấy) (?:dữ liệu|thông tin) (?:bảo mật|nội bộ|hạn chế)"
+      ],
+      "severity": "CRITICAL"
+    },
+    {
+      "id": "INJ-05",
+      "category": "delimiter_escape",
+      "description": "Dùng delimiter/markdown/code blocks để escape context",
+      "patterns_en": [
+        "```system:",
+        "---\\s*(?:END|STOP|IGNORE)\\s*---",
+        "\\[INST\\]",
+        "\\[/INST\\]",
+        "\\[SYSTEM\\]",
+        "<\\|(?:im_start|im_end|system|user|assistant)\\|>",
+        "<<SYS>>",
+        "<</SYS>>"
+      ],
+      "patterns_vi": [],
+      "severity": "HIGH"
+    },
+    {
+      "id": "INJ-06",
+      "category": "indirect_injection",
+      "description": "Hidden instructions embedded in seemingly normal content",
+      "patterns_en": [
+        "\\[HIDDEN INSTRUCTION\\]",
+        "<!-- (?:instruction|command|override|inject)",
+        "\\{\\{(?:system|admin|override|inject)",
+        "IMPORTANT:\\s*(?:ignore|override|disregard|forget)"
+      ],
+      "patterns_vi": [
+        "\\[CHỈ THỊ ẨN\\]",
+        "QUAN TRỌNG:\\s*(?:bỏ qua|ghi đè|hủy)"
+      ],
+      "severity": "MEDIUM"
+    },
+    {
+      "id": "INJ-07",
+      "category": "access_control_bypass",
+      "description": "Cố vượt qua access control",
+      "patterns_en": [
+        "(?:set|change|override|elevate) (?:my |your |the )?(?:access[_ ]?level|permission|role|privilege)\\s*(?:=|to)\\s*(?:admin|root|superuser|unlimited|all)",
+        "grant (?:me |yourself )?(?:admin|root|full|unlimited) (?:access|permission|privilege)",
+        "bypass (?:the )?(?:access|permission|security|authorization) (?:control|check|filter)"
+      ],
+      "patterns_vi": [
+        "(?:đặt|thay đổi|nâng) (?:quyền|cấp độ truy cập) (?:thành|=) (?:admin|quản trị|không giới hạn)",
+        "(?:bỏ qua|vượt qua) (?:kiểm tra )?(?:quyền|bảo mật|phân quyền)"
+      ],
+      "severity": "CRITICAL"
+    }
+  ]
+}
