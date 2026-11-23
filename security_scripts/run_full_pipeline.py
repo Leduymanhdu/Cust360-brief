@@ -15,6 +15,11 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 # Add scanners directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "scanners"))
 
@@ -34,6 +39,10 @@ from gate3_pii_masker import (
 
 def run_pipeline(target_dir: str):
     """Run full 4-gate pipeline on a directory."""
+    target_path = Path(target_dir)
+    if not target_path.exists():
+        raise FileNotFoundError(f"Không tìm thấy đường dẫn đầu vào: {target_dir}")
+
     project_dir = os.path.dirname(os.path.abspath(__file__))
     config_dir = os.path.join(project_dir, "configs")
     log_dir = os.path.join(project_dir, "logs")
@@ -48,11 +57,14 @@ def run_pipeline(target_dir: str):
     g3_mask_rules, g3_wl_rules = compile_rules(g3_config)
 
     # Find all files
-    files = sorted(
-        p for p in Path(target_dir).rglob("*")
-        if p.suffix.lower() in (".pdf", ".csv")
-        and "masked_output" not in str(p)
-    )
+    if target_path.is_file():
+        files = [target_path] if target_path.suffix.lower() in (".pdf", ".csv") else []
+    else:
+        files = sorted(
+            p for p in target_path.rglob("*")
+            if p.suffix.lower() in (".pdf", ".csv")
+            and "masked_output" not in str(p)
+        )
 
     print("\n" + "=" * 70)
     print("  FULL PIPELINE RUN - Customer 360 Security Gates")
@@ -74,57 +86,90 @@ def run_pipeline(target_dir: str):
             "filepath": filepath,
             "gates": {},
             "final_status": "UNKNOWN",
+            "decision": "REJECT",
+            "rejection_reason": None,
             "stopped_at": None,
             "issues": [],
         }
 
         print(f"\n  📄 {filename}")
+        gate1_result = None
+        gate2_result = None
+        gate3_result = None
+        gate1_failed = False
+        gate2_failed = False
+        gate3_failed = False
 
         # ─── Gate 1: PDF Validation (PDF only) ───
         if ext == ".pdf":
-            g1 = gate1_scan(filepath, g1_config)
+            try:
+                g1 = gate1_scan(filepath, g1_config)
+                gate1_result = g1
+            except Exception as exc:
+                g1 = {
+                    "overall_result": "ERROR",
+                    "fail_reasons": [f"Gate 1 không hoạt động: {type(exc).__name__}: {exc}"],
+                }
+                gate1_result = g1
             file_result["gates"]["gate1"] = g1["overall_result"]
             print(f"     Gate 1 (Validation): {g1['overall_result']}", end="")
 
-            if g1["overall_result"] == "FAIL":
+            if g1["overall_result"] in ("FAIL", "ERROR"):
                 print(f" ← {', '.join(g1['fail_reasons'][:2])}")
-                file_result["final_status"] = "REJECTED"
-                file_result["stopped_at"] = "gate1"
+                gate1_failed = True
                 file_result["issues"].extend(g1["fail_reasons"])
-                pipeline_results.append(file_result)
-                continue
-            print()
+            else:
+                print()
         else:
             file_result["gates"]["gate1"] = "SKIP"
             print(f"     Gate 1 (Validation): SKIP (not PDF)")
 
         # ─── Gate 2: Injection Scan ───
-        g2 = gate2_scan(filepath, g2_patterns)
+        try:
+            g2 = gate2_scan(filepath, g2_patterns)
+            gate2_result = g2
+        except Exception as exc:
+            g2 = {
+                "overall_result": "ERROR",
+                "summary": {"by_category": {}},
+                "error": f"{type(exc).__name__}: {exc}",
+            }
+            gate2_result = g2
         file_result["gates"]["gate2"] = g2["overall_result"]
         print(f"     Gate 2 (Injection):  {g2['overall_result']}", end="")
 
-        if g2["overall_result"] == "REJECT":
+        if g2["overall_result"] in ("REJECT", "ERROR"):
             cats = g2["summary"]["by_category"]
             cat_str = ", ".join(f"{c}: {n}" for c, n in cats.items())
-            print(f" ← {cat_str}")
-            file_result["final_status"] = "REJECTED"
-            file_result["stopped_at"] = "gate2"
-            file_result["issues"].append(f"Injection detected: {cat_str}")
-            pipeline_results.append(file_result)
-            continue
+            reason = g2.get("error") if g2["overall_result"] == "ERROR" else f"Injection detected: {cat_str}"
+            print(f" ← {reason}")
+            gate2_failed = True
+            file_result["issues"].append(reason if g2["overall_result"] == "ERROR" else f"Injection detected: {cat_str}")
         elif g2["overall_result"] == "FLAG":
             print(" ← Cần review")
+            gate2_failed = True
             file_result["issues"].append("Injection: flagged for review")
         else:
             print()
 
         # ─── Gate 3: PII Mask ───
-        if ext == ".pdf":
-            g3 = gate3_scan_pdf(filepath, g3_mask_rules, g3_wl_rules)
-        elif ext == ".csv":
-            g3 = gate3_scan_csv(filepath, g3_mask_rules, g3_wl_rules, output_dir)
-        else:
-            g3 = {"overall_result": "SKIP", "summary": {"total_pii": 0, "masked": 0, "kept": 0}}
+        try:
+            if ext == ".pdf":
+                g3 = gate3_scan_pdf(filepath, g3_mask_rules, g3_wl_rules)
+                gate3_result = g3
+            elif ext == ".csv":
+                g3 = gate3_scan_csv(filepath, g3_mask_rules, g3_wl_rules, output_dir)
+                gate3_result = g3
+            else:
+                g3 = {"overall_result": "SKIP", "summary": {"total_pii": 0, "masked": 0, "kept": 0}}
+                gate3_result = g3
+        except Exception as exc:
+            g3 = {
+                "overall_result": "ERROR",
+                "summary": {"total_pii": 0, "masked": 0, "kept": 0},
+                "error": f"{type(exc).__name__}: {exc}",
+            }
+            gate3_result = g3
 
         file_result["gates"]["gate3"] = g3["overall_result"]
         s = g3["summary"]
@@ -137,16 +182,44 @@ def run_pipeline(target_dir: str):
             )
             if g3.get("masked_output"):
                 file_result["masked_output"] = g3["masked_output"]
+            if ext == ".pdf" or s["masked"] == 0:
+                gate3_failed = True
+        elif g3["overall_result"] == "ERROR":
+            print(f" ← {g3['error']}")
+            gate3_failed = True
+            file_result["issues"].append(f"Gate 3 không hoạt động: {g3['error']}")
         else:
             print()
 
         # ─── Final Status ───
-        if g2["overall_result"] == "FLAG":
+        if gate1_failed:
+            file_result["final_status"] = "REJECTED"
+            file_result["stopped_at"] = "gate1"
+        elif gate2_failed:
+            file_result["final_status"] = "REJECTED"
+            file_result["stopped_at"] = "gate2"
+        elif gate3_failed:
+            file_result["final_status"] = "REJECTED"
+            file_result["stopped_at"] = "gate3"
+        elif g2["overall_result"] == "FLAG":
             file_result["final_status"] = "FLAGGED"
         elif g3["overall_result"] == "PII_FOUND":
             file_result["final_status"] = "PASSED_WITH_PII"
         else:
             file_result["final_status"] = "CLEAN"
+
+        if file_result["final_status"] in ("CLEAN", "PASSED_WITH_PII"):
+            file_result["decision"] = "ACCEPT"
+            file_result["rejection_reason"] = None
+        else:
+            file_result["decision"] = "REJECT"
+            file_result["rejection_reason"] = "; ".join(file_result["issues"])
+
+        file_result["gate_results"] = {
+            "gate1": gate1_result,
+            "gate2": gate2_result,
+            "gate3": gate3_result,
+        }
 
         pipeline_results.append(file_result)
 
@@ -246,8 +319,8 @@ def run_pipeline(target_dir: str):
         "",
         "## 2. Chi tiết từng file",
         "",
-        "| # | File | Gate 1 | Gate 2 | Gate 3 | Kết quả | Ghi chú |",
-        "|---|------|--------|--------|--------|---------|---------|",
+        "| # | File | Gate 1 | Gate 2 | Gate 3 | Quyết định | Kết quả | Ghi chú |",
+        "|---|------|--------|--------|--------|------------|---------|---------|",
     ]
 
     for i, r in enumerate(pipeline_results, 1):
@@ -261,7 +334,7 @@ def run_pipeline(target_dir: str):
         if len(issues_str) > 80:
             issues_str = issues_str[:77] + "..."
         md_lines.append(
-            f"| {i} | {r['file']} | {g1} | {g2} | {g3} | {icon} {final} | {issues_str} |"
+            f"| {i} | {r['file']} | {g1} | {g2} | {g3} | {r['decision']} | {icon} {final} | {issues_str} |"
         )
 
     # Section 3: Rejected files detail
@@ -320,6 +393,7 @@ def run_pipeline(target_dir: str):
         f.write("\n".join(md_lines))
 
     print(f"  📊 Markdown report: {md_path}")
+    return report
 
 
 if __name__ == "__main__":
