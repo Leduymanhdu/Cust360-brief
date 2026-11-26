@@ -1,7 +1,8 @@
 import asyncio
 from typing import Any
-
+import jwt
 import httpx
+import pytest
 
 from app.main import app
 from app.mock_data import (
@@ -9,11 +10,36 @@ from app.mock_data import (
     ACCOUNT_RESTRICTED_ID,
     BRIEFING_ID,
     SALES_USER_ID,
+    ADMIN_USER_ID,
     SITE_HANOI_ID,
 )
+from app.services.jwt_service import create_access_token
 
-SALES_HEADERS = {"Authorization": "Bearer demo-sales-token"}
-ADMIN_HEADERS = {"Authorization": "Bearer demo-admin-token"}
+
+def get_token_headers(user_id: str, email: str, role: str, full_name: str) -> dict[str, str]:
+    token = create_access_token(
+        data={
+            "sub": user_id,
+            "email": email,
+            "role": role,
+            "full_name": full_name,
+        }
+    )
+    return {"Authorization": f"Bearer {token}"}
+
+
+SALES_HEADERS = get_token_headers(
+    str(SALES_USER_ID),
+    "sales@songnhat.com.vn",
+    "SALES",
+    "Nguyen Van A",
+)
+ADMIN_HEADERS = get_token_headers(
+    str(ADMIN_USER_ID),
+    "admin@songnhat.com.vn",
+    "ADMIN",
+    "SongNhat Admin",
+)
 
 
 def request(method: str, path: str, **kwargs: Any) -> httpx.Response:
@@ -65,13 +91,17 @@ def test_login_and_ambiguous_account_search() -> None:
         },
     )
     assert login.status_code == 200
-    assert login.json()["access_token"] == "demo-sales-token"
+    token = login.json()["access_token"]
+    assert token is not None
+    assert len(token) > 20
 
+    # Search using the returned real JWT token
+    headers = {"Authorization": f"Bearer {token}"}
     search = request(
         "GET",
         "/api/v1/accounts/search",
         params={"q": "ABC"},
-        headers=SALES_HEADERS,
+        headers=headers,
     )
     assert search.status_code == 200
     body = search.json()
