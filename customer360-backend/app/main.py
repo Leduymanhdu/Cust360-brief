@@ -1,16 +1,22 @@
+import logging
 import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from psycopg import Error as PsycopgError
+from psycopg import IntegrityError, OperationalError
 
 from app.routers import accounts, admin, auth, briefings
 
 API_PREFIX = "/api/v1"
+logger = logging.getLogger(__name__)
 cors_origins = [
     origin.strip()
     for origin in os.getenv(
         "CORS_ORIGINS",
-        "http://localhost:3000,http://localhost:5173",
+        "http://localhost:3000,http://localhost:5173,"
+        "http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:5000",
     ).split(",")
     if origin.strip()
 ]
@@ -19,25 +25,69 @@ app = FastAPI(
     title="Customer 360 Briefing Assistant API",
     summary="Source-cited account briefing API for SongNhat.",
     description=(
-        "OpenAPI contract and deterministic mock endpoints for frontend integration. "
-        "Swagger UI is available at `/docs`; the raw OpenAPI schema is at `/openapi.json`.\n\n"
-        "**Integration build:** Authentication tokens, imports, generation, persistence, "
-        "and cache invalidation use in-memory mock behavior. Do not deploy this build "
-        "with customer data. Replace the mock services with PostgreSQL, Redis, and the "
-        "production JWT implementation before deployment.\n\n"
-        "**Demo users:** `sales@songnhat.com.vn` / `SecurePass123!` and "
-        "`admin@songnhat.com.vn` / `AdminPass123!`. Log in and click **Authorize** "
-        "with the returned access token."
+        "Account search/details, login, account scope, and briefing persistence use "
+        "PostgreSQL. Briefing content is assembled deterministically from available "
+        "account, PDF, and commercial records; it does not call an AI provider. "
+        "CSV/PDF imports remain integration stubs. Swagger UI is available at `/docs`."
     ),
     version="0.1.0",
     openapi_tags=[
-        {"name": "Authentication", "description": "Demo login and bearer token."},
+        {"name": "Authentication", "description": "Database login and short-lived JWT bearer tokens."},
         {"name": "Accounts", "description": "Scoped account search and identity matching."},
         {"name": "Briefings", "description": "Generate, retrieve, cite, and export briefings."},
         {"name": "Administration", "description": "Admin-only imports and access revocation."},
         {"name": "System", "description": "Liveness and service metadata."},
     ],
 )
+
+
+@app.exception_handler(OperationalError)
+async def handle_database_unavailable(_request, exc: OperationalError) -> JSONResponse:
+    logger.error(
+        "PostgreSQL connection failed: %s",
+        exc,
+        exc_info=(type(exc), exc, exc.__traceback__),
+    )
+    return JSONResponse(
+        status_code=503,
+        content={
+            "detail": "Database is unavailable.",
+            "code": "DATABASE_UNAVAILABLE",
+        },
+    )
+
+
+@app.exception_handler(IntegrityError)
+async def handle_database_conflict(_request, exc: IntegrityError) -> JSONResponse:
+    logger.error(
+        "PostgreSQL rejected a conflicting write: %s",
+        exc,
+        exc_info=(type(exc), exc, exc.__traceback__),
+    )
+    return JSONResponse(
+        status_code=409,
+        content={
+            "detail": "The requested data conflicts with an existing record.",
+            "code": "DATABASE_CONFLICT",
+        },
+    )
+
+
+@app.exception_handler(PsycopgError)
+async def handle_database_error(_request, exc: PsycopgError) -> JSONResponse:
+    logger.error(
+        "PostgreSQL query failed: %s",
+        exc,
+        exc_info=(type(exc), exc, exc.__traceback__),
+    )
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "A database operation failed.",
+            "code": "DATABASE_ERROR",
+        },
+    )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -60,7 +110,7 @@ def root() -> dict[str, str]:
         "version": app.version,
         "docs_url": "/docs",
         "openapi_url": "/openapi.json",
-        "mode": "mock-integration",
+        "mode": "postgresql",
     }
 
 

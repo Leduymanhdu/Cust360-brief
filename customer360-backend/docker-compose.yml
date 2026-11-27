@@ -4,7 +4,9 @@ services:
     ports:
       - "8000:8000"
     environment:
-      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173,http://127.0.0.1:5000}
+      DATABASE_URL: postgresql://customer360:local-dev-only@postgres:5432/customer360
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-customer360-local-jwt-secret-change-this-in-deploy}
     depends_on:
       - postgres
       - redis
@@ -20,7 +22,20 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/001-init.sql:ro
-
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: customer360-pgadmin
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@gmail.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
   redis:
     image: redis:7-alpine
     ports:
@@ -28,3 +43,4 @@ services:
 
 volumes:
   postgres_data:
+  pgadmin_data:

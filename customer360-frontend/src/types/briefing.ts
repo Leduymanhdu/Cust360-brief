@@ -11,94 +11,66 @@ export type SourceType = CitationSourceType;
 export type ValidationStatus = CitationValidationStatus;
 
 export interface TooltipCitation {
-  id: string;
-  briefing_id: string;
+  briefing_id?: string;
   citation_number: number;
   claim_text: string;
   source_type: SourceType;
-  source_name: string;
-  page_number?: number;
-  source_excerpt?: string;
+  source_id: string;
+  source_name?: string;
+  page_number?: number | null;
+  source_excerpt?: string | null;
   validation_status: ValidationStatus;
 }
 
 export type CitationMap = Record<number, TooltipCitation>;
-
-export interface BriefingStatement {
-  text: string;
-  citation_numbers: number[];
-}
-
-export interface TooltipBriefingSection {
-  title: string;
-  statements: BriefingStatement[];
-}
-
-export interface TooltipBriefing {
-  id: string;
-  account_id: string;
-  site_id?: string;
-  generated_by: string;
-  briefing_status: BriefingStatus;
-  sections: TooltipBriefingSection[];
-  is_stale: boolean;
-  validation_status: ValidationStatus;
-  created_at: string;
-  completed_at?: string;
-}
 
 export interface CitationsResponse {
   briefing_id: string;
   citations: TooltipCitation[];
 }
 
+export interface ApiBriefingSection {
+  content: string;
+  citations: number[];
+}
+
+export type ApiBriefingSectionKey =
+  | "account_and_site"
+  | "contacts_and_roles"
+  | "recent_interactions"
+  | "commercial_facts"
+  | "service_issues"
+  | "suggested_questions_and_gaps";
+
+export interface ApiBriefingResponse {
+  briefing_id: string;
+  account_id: string;
+  site_id: string | null;
+  status: BriefingStatus;
+  is_stale: boolean;
+  sections: Record<ApiBriefingSectionKey, ApiBriefingSection>;
+  validation_status: "PENDING" | "PASSED" | "FAILED" | "BLOCKED";
+  created_at: string;
+  completed_at: string | null;
+}
+
 export interface ApiSite {
   id: string;
-  accountId: string;
-  siteName: string;
-  address: string;
+  site_name: string;
+  address: string | null;
 }
 
 export interface ApiAccount {
   id: string;
-  legalName: string;
-  taxCode: string;
-  industry: string;
+  legal_name: string;
+  tax_code: string | null;
+  industry: string | null;
   status: ApiAccountStatus;
-  hasPermission: boolean;
   sites?: ApiSite[];
-  createdAt?: string;
-  updatedAt?: string;
+  match_status?: "EXACT" | "AMBIGUOUS" | "SINGLE";
 }
 
-export interface Citation {
-  id: string;
-  briefingId: string;
-  citationNumber: number;
-  claimText: string;
-  sourceType: CitationSourceType;
-  sourceExcerpt?: string;
-  validationStatus: CitationValidationStatus;
-}
-
-export interface ApiBriefing {
-  id: string;
-  accountId: string;
-  siteId?: string | null;
-  generatedBy: string;
-  briefingStatus: BriefingStatus;
-  isStale: boolean;
-  sections: {
-    companyOverview?: string;
-    commercialSummary?: string;
-    riskWarnings?: string[];
-    recentActivities?: string[];
-  };
-  citations: Citation[];
-  freshnessStatus: string;
-  validationStatus: string;
-  createdAt: string;
-}
+export type Citation = TooltipCitation;
 
 export interface AuditLog {
   id: string;
@@ -126,14 +98,6 @@ export type ServiceIssueStatus =
   | "In Progress"
   | "Resolved"
   | "Closed";
-
-export type BriefingSectionKey =
-  | "account_site"
-  | "contacts_roles"
-  | "recent_interactions"
-  | "commercial_facts"
-  | "service_issues"
-  | "suggestions_gaps";
 
 export interface Account {
   id: string;
@@ -211,39 +175,4 @@ export interface InformationGap {
   description: string;
   state: "Missing" | "Inconsistent" | "Unverified";
   follow_up_action: string;
-}
-
-export interface BriefingCitation {
-  id: string;
-  label: string;
-  source: string;
-  is_sample: boolean;
-}
-
-export interface BriefingSection {
-  key: BriefingSectionKey;
-  content: string;
-  citations: BriefingCitation[];
-  validation_status: "verified" | "needs_review" | "not_applicable";
-}
-
-export interface BriefingContent {
-  account: Account;
-  site: Site;
-  contacts: Contact[];
-  interactions: Interaction[];
-  commercial: CommercialFacts;
-  service_issues: ServiceIssue[];
-  suggested_questions: string[];
-  information_gaps: InformationGap[];
-}
-
-export interface Briefing {
-  briefing_id: string;
-  account_id: string;
-  status: "ready" | "draft" | "failed";
-  is_stale: boolean;
-  sections: BriefingSection[];
-  content: BriefingContent;
-  citations: BriefingCitation[];
 }

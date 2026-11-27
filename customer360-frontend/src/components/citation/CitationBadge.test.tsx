@@ -6,11 +6,11 @@ import { CitationBadge } from './CitationBadge';
 import type { Citation } from '../../types/briefing';
 
 const mockPdfCitation: Citation = {
-  id: 'cit-001',
   briefing_id: 'brief-abc',
   citation_number: 1,
   claim_text: 'Doanh thu Q3 đạt 15.2 tỷ VND',
   source_type: 'PDF',
+  source_id: 'pdf-001',
   source_name: 'BaoCao_Q3.pdf',
   page_number: 12,
   source_excerpt: 'Tổng doanh thu trong quý III...',
@@ -18,11 +18,11 @@ const mockPdfCitation: Citation = {
 };
 
 const mockCommercialCitation: Citation = {
-  id: 'cit-002',
   briefing_id: 'brief-abc',
   citation_number: 2,
   claim_text: 'Có 3 đơn hàng đang xử lý',
   source_type: 'COMMERCIAL',
+  source_id: 'commercial-001',
   source_name: 'SAP ERP',
   validation_status: 'PENDING',
 };

@@ -3,8 +3,9 @@ import io
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from psycopg import Connection
 
-from app.mock_data import ACCOUNTS, DEMO_USERS
+from app.database import get_db_connection
 from app.schemas import (
     ErrorResponse,
     ImportJobResponse,
@@ -115,33 +116,50 @@ async def import_pdf(
         401: {"model": ErrorResponse, "description": "Authentication required."},
         403: {"model": ErrorResponse, "description": "Administrator role required."},
         404: {"model": ErrorResponse, "description": "User or account not found."},
+        500: {"model": ErrorResponse, "description": "Database operation failed."},
+        503: {"model": ErrorResponse, "description": "Database is unavailable."},
     },
 )
 def revoke_access(
     user_id: UUID,
     payload: RevokeAccessRequest,
     admin: dict = Depends(require_admin),
+    connection: Connection = Depends(get_db_connection),
 ) -> RevokeAccessResponse:
-    """Revoke a seeded user's account scope (mock cache invalidation)."""
-    target = next(
-        (account for account in DEMO_USERS.values() if account["user"].id == user_id),
-        None,
-    )
-    if target is None or not any(
-        account.id == payload.account_id for account in ACCOUNTS
-    ):
-        raise HTTPException(status_code=404, detail="User or account not found.")
-    if target is admin:
+    """Revoke a user's account scope in PostgreSQL."""
+    if user_id == admin["user"].id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="The demo administrator cannot revoke their own access.",
+            detail="An administrator cannot revoke their own access.",
         )
-    was_granted = payload.account_id in target["account_ids"]
-    target["account_ids"].discard(payload.account_id)
+
+    with connection.transaction():
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT 1 FROM users WHERE id = %s", (user_id,))
+            user_exists = cursor.fetchone() is not None
+            cursor.execute(
+                "SELECT 1 FROM accounts WHERE id = %s",
+                (payload.account_id,),
+            )
+            account_exists = cursor.fetchone() is not None
+            if not user_exists or not account_exists:
+                raise HTTPException(
+                    status_code=404,
+                    detail="User or account not found.",
+                )
+            cursor.execute(
+                """
+                DELETE FROM user_account_access
+                WHERE user_id = %s AND account_id = %s
+                """,
+                (user_id, payload.account_id),
+            )
+            was_granted = cursor.rowcount > 0
+
     return RevokeAccessResponse(
         user_id=user_id,
         account_id=payload.account_id,
         revoked=was_granted,
-        cache_cleared=True,
+        cache_cleared=False,
         message=f"Access revocation recorded. Reason: {payload.reason}",
     )

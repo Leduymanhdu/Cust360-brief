@@ -7,13 +7,9 @@ import { Toast } from './components/toast.js';
 
 class App {
     constructor() {
-        this.currentUser = {
-            id: 'usr-002',
-            email: 'sales@cust360.vn',
-            full_name: 'Trần Thị Thu Thảo',
-            role: 'SALES',
-            is_active: true
-        };
+        this.currentUser = null;
+        this.accessToken = null;
+        this.isAuthenticated = false;
         this.currentScreen = 'login'; // 'login' or 'search'
     }
 
@@ -23,10 +19,11 @@ class App {
 
         // Initial route
         const initialHash = window.location.hash.replace('#', '');
-        if (initialHash === 'search') {
+        if (initialHash === 'search' && this.isAuthenticated) {
             this.currentScreen = 'search';
         } else {
             this.currentScreen = 'login';
+            if (initialHash === 'search') window.location.hash = '';
         }
 
         this.render();
@@ -34,15 +31,23 @@ class App {
 
     handleRouting() {
         const hash = window.location.hash.replace('#', '');
-        if (hash === 'search') {
+        if (hash === 'search' && this.isAuthenticated) {
             this.currentScreen = 'search';
         } else {
             this.currentScreen = 'login';
+            if (hash === 'search') window.location.hash = '';
         }
         this.render();
     }
 
     navigateTo(screen) {
+        if (screen === 'search' && !this.isAuthenticated) {
+            Toast.show('Vui lòng đăng nhập để tiếp tục.', 'error');
+            this.currentScreen = 'login';
+            window.location.hash = '';
+            this.render();
+            return;
+        }
         this.currentScreen = screen;
         window.location.hash = screen;
         this.render();
@@ -99,6 +104,9 @@ class App {
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
                     Toast.show('Đã đăng xuất khỏi tài khoản.', 'info');
+                    this.currentUser = null;
+                    this.accessToken = null;
+                    this.isAuthenticated = false;
                     this.navigateTo('login');
                 });
             }
@@ -112,11 +120,10 @@ class App {
         if (this.currentScreen === 'login') {
             LoginComponent.render(
                 mainContainer,
-                (user) => {
-                    if (user) this.currentUser = user;
-                    this.navigateTo('search');
-                },
-                () => {
+                (user, accessToken) => {
+                    this.currentUser = user;
+                    this.accessToken = accessToken;
+                    this.isAuthenticated = true;
                     this.navigateTo('search');
                 }
             );
@@ -124,7 +131,11 @@ class App {
             SearchComponent.render(
                 mainContainer,
                 this.currentUser,
+                this.accessToken,
                 () => {
+                    this.currentUser = null;
+                    this.accessToken = null;
+                    this.isAuthenticated = false;
                     this.navigateTo('login');
                 }
             );

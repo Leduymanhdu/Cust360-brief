@@ -1,16 +1,19 @@
 import type { CitationsResponse, CitationMap } from '../types/briefing';
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1';
 
 export async function fetchCitations(
   briefingId: string,
-  token: string
+  token: string,
+  signal?: AbortSignal
 ): Promise<CitationsResponse> {
   const res = await fetch(`${API_BASE}/briefings/${briefingId}/citations`, {
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     },
+    signal,
   });
 
   if (!res.ok) {

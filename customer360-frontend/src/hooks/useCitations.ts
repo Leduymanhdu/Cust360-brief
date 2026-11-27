@@ -33,7 +33,7 @@ export function useCitations(
     setIsLoading(true);
     setError(null);
 
-    fetchCitations(briefingId, token)
+    fetchCitations(briefingId, token, abortRef.current.signal)
       .then((res) => {
         const map = buildCitationMap(res);
         cache.set(briefingId, map);
