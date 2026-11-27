@@ -1,16 +1,10 @@
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Response, status
+from psycopg import Connection
 
-from app.mock_data import (
-    ACCOUNTS,
-    BRIEFINGS,
-    BRIEFING_CITATIONS,
-    BRIEFING_ID,
-    ACCOUNT_ABC_VIETNAM_ID,
-    SITE_HANOI_ID,
-    create_mock_briefing,
-)
+from app.database import get_db_connection
+from app.services.briefing_service import create_briefing
 from app.schemas import (
     BriefingAcceptedResponse,
     BriefingCitationsResponse,
@@ -31,27 +25,36 @@ router = APIRouter(prefix="/briefings", tags=["Briefings"])
     responses={
         403: {"model": ErrorResponse, "description": "ACC-002 Account access denied."},
         404: {"model": ErrorResponse, "description": "ACC-001 Account or site not found."},
+        500: {"model": ErrorResponse, "description": "Database operation failed."},
+        503: {"model": ErrorResponse, "description": "Database is unavailable."},
     },
 )
 def generate_briefing(
     payload: BriefingGenerationRequest,
     user: dict = Depends(get_current_user),
+    connection: Connection = Depends(get_db_connection),
 ) -> BriefingAcceptedResponse:
-    """Accept a generation request and create a deterministic mock briefing."""
-    check_account_access(user, payload.account_id)
-    if not any(account.id == payload.account_id for account in ACCOUNTS):
+    """Create and persist a deterministic briefing from database evidence."""
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT 1 FROM accounts WHERE id = %s", (payload.account_id,))
+        account_exists = cursor.fetchone() is not None
+    if not account_exists:
         raise HTTPException(status_code=404, detail="Account not found.")
-    if payload.site_id is not None and (
-        payload.account_id != ACCOUNT_ABC_VIETNAM_ID
-        or payload.site_id != SITE_HANOI_ID
-    ):
-        raise HTTPException(status_code=404, detail="Site not found for this account.")
 
-    briefing = create_mock_briefing(payload.account_id, payload.site_id)
+    check_account_access(user, payload.account_id)
+    try:
+        briefing_id = create_briefing(
+            connection,
+            payload.account_id,
+            payload.site_id,
+            user["user"].id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
     return BriefingAcceptedResponse(
-        briefing_id=briefing.briefing_id,
+        briefing_id=briefing_id,
         status="GENERATING",
-        message="Briefing generation started (mock integration response).",
+        message="Briefing generation accepted; retrieve it using briefing_id.",
     )
 
 
@@ -62,46 +65,105 @@ def generate_briefing(
     responses={
         403: {"model": ErrorResponse, "description": "ACC-002 Account access denied."},
         404: {"model": ErrorResponse, "description": "BRF-001 Briefing not found."},
+        500: {"model": ErrorResponse, "description": "Database query failed."},
+        503: {"model": ErrorResponse, "description": "Database is unavailable."},
     },
 )
 def get_briefing(
     briefing_id: UUID,
     user: dict = Depends(get_current_user),
+    connection: Connection = Depends(get_db_connection),
 ) -> BriefingResponse:
-    briefing = BRIEFINGS.get(briefing_id)
-    if briefing is None:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT id, account_id, site_id, briefing_status, is_stale, sections,
+                   validation_status, created_at, completed_at
+            FROM briefings
+            WHERE id = %s
+            """,
+            (briefing_id,),
+        )
+        row = cursor.fetchone()
+    if row is None:
         raise HTTPException(status_code=404, detail="Briefing not found.")
-    check_account_access(user, briefing.account_id)
-    return briefing
+    check_account_access(user, row["account_id"])
+    return BriefingResponse(
+        briefing_id=row["id"],
+        account_id=row["account_id"],
+        site_id=row["site_id"],
+        status=row["briefing_status"],
+        is_stale=row["is_stale"],
+        sections=row["sections"],
+        validation_status=row["validation_status"],
+        created_at=row["created_at"],
+        completed_at=row["completed_at"],
+    )
 
 
 @router.get(
     "/{briefing_id}/citations",
     response_model=BriefingCitationsResponse,
-    summary="List the validated source citations for a briefing",
+    summary="List source citations for a briefing",
     responses={
         403: {"model": ErrorResponse, "description": "ACC-002 Account access denied."},
         404: {"model": ErrorResponse, "description": "BRF-001 Briefing not found."},
+        500: {"model": ErrorResponse, "description": "Database query failed."},
+        503: {"model": ErrorResponse, "description": "Database is unavailable."},
     },
 )
 def get_briefing_citations(
     briefing_id: UUID,
     user: dict = Depends(get_current_user),
+    connection: Connection = Depends(get_db_connection),
 ) -> BriefingCitationsResponse:
-    briefing = BRIEFINGS.get(briefing_id)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT account_id FROM briefings WHERE id = %s",
+            (briefing_id,),
+        )
+        briefing = cursor.fetchone()
     if briefing is None:
         raise HTTPException(status_code=404, detail="Briefing not found.")
-    check_account_access(user, briefing.account_id)
+    check_account_access(user, briefing["account_id"])
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT c.citation_number, c.claim_text, c.source_type,
+                   COALESCE(c.pdf_text_id, c.commercial_record_id) AS source_id,
+                   p.page_number,
+                   COALESCE(c.source_excerpt, p.extracted_text) AS source_excerpt,
+                   c.validation_status
+            FROM citations AS c
+            LEFT JOIN pdf_text AS p ON p.id = c.pdf_text_id
+            LEFT JOIN commercial_records AS cr ON cr.id = c.commercial_record_id
+            WHERE c.briefing_id = %s
+              AND (
+                  (
+                      c.source_type = 'PDF'
+                      AND p.account_id = %s
+                      AND p.is_usable = TRUE
+                      AND p.injection_flag = FALSE
+                  )
+                  OR
+                  (c.source_type = 'COMMERCIAL' AND cr.account_id = %s)
+              )
+            ORDER BY c.citation_number
+            """,
+            (briefing_id, briefing["account_id"], briefing["account_id"]),
+        )
+        rows = cursor.fetchall()
     return BriefingCitationsResponse(
         briefing_id=briefing_id,
-        citations=BRIEFING_CITATIONS.get(briefing_id, []),
+        citations=rows,
     )
 
 
-def _mock_pdf(briefing: BriefingResponse) -> bytes:
+def _render_briefing_pdf(briefing: BriefingResponse) -> bytes:
     lines = [
         "Customer 360 Briefing",
-        "MOCK INTEGRATION DOCUMENT - NOT AN OFFICIAL CUSTOMER REPORT",
+        "Internal customer report",
         f"Briefing: {briefing.briefing_id}",
         f"Account: {briefing.account_id}",
         f"Status: {briefing.status.value}",
@@ -149,23 +211,47 @@ def _mock_pdf(briefing: BriefingResponse) -> bytes:
     summary="Download a briefing as an internal PDF",
     responses={
         200: {
-            "description": "PDF file (watermarked as mock integration output).",
+            "description": "PDF file generated from a saved briefing.",
             "content": {"application/pdf": {"schema": {"type": "string", "format": "binary"}}},
         },
         403: {"model": ErrorResponse, "description": "ACC-002 Account access denied."},
         404: {"model": ErrorResponse, "description": "BRF-001 Briefing not found."},
+        500: {"model": ErrorResponse, "description": "Database query failed."},
+        503: {"model": ErrorResponse, "description": "Database is unavailable."},
     },
 )
 def export_briefing_pdf(
     briefing_id: UUID,
     user: dict = Depends(get_current_user),
+    connection: Connection = Depends(get_db_connection),
 ) -> Response:
-    briefing = BRIEFINGS.get(briefing_id)
-    if briefing is None:
+    with connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT id, account_id, site_id, briefing_status, is_stale, sections,
+                   validation_status, created_at, completed_at
+            FROM briefings
+            WHERE id = %s
+            """,
+            (briefing_id,),
+        )
+        row = cursor.fetchone()
+    if row is None:
         raise HTTPException(status_code=404, detail="Briefing not found.")
-    check_account_access(user, briefing.account_id)
+    check_account_access(user, row["account_id"])
+    briefing = BriefingResponse(
+        briefing_id=row["id"],
+        account_id=row["account_id"],
+        site_id=row["site_id"],
+        status=row["briefing_status"],
+        is_stale=row["is_stale"],
+        sections=row["sections"],
+        validation_status=row["validation_status"],
+        created_at=row["created_at"],
+        completed_at=row["completed_at"],
+    )
     return Response(
-        content=_mock_pdf(briefing),
+        content=_render_briefing_pdf(briefing),
         media_type="application/pdf",
         headers={
             "Content-Disposition": f'attachment; filename="briefing-{briefing_id}.pdf"'

@@ -35,12 +35,12 @@ class UserSummary(APIModel):
 
 
 class LoginRequest(APIModel):
-    email: EmailStr = Field(examples=["sales@songnhat.com.vn"])
-    password: str = Field(min_length=1, examples=["SecurePass123!"])
+    email: EmailStr = Field(examples=["sales@cust360.vn"])
+    password: str = Field(min_length=1, examples=["password123"])
 
 
 class LoginResponse(APIModel):
-    access_token: str = Field(description="Bearer access token; mock token in this integration build.")
+    access_token: str = Field(description="Short-lived signed JWT bearer access token.")
     token_type: Literal["Bearer"] = "Bearer"
     expires_in: int = Field(default=900, description="Access-token lifetime in seconds.")
     user: UserSummary
@@ -53,6 +53,21 @@ class AccountSummary(APIModel):
     industry: str | None = None
     status: Literal["ACTIVE", "INACTIVE"] = "ACTIVE"
     match_status: Literal["EXACT", "AMBIGUOUS", "SINGLE"] = "SINGLE"
+
+
+class AccountSite(APIModel):
+    id: UUID
+    site_name: str
+    address: str | None = None
+
+
+class AccountDetail(APIModel):
+    id: UUID
+    legal_name: str
+    tax_code: str | None = None
+    industry: str | None = None
+    status: Literal["ACTIVE", "INACTIVE"] = "ACTIVE"
+    sites: list[AccountSite] = Field(default_factory=list)
 
 
 class AccountSearchResponse(APIModel):

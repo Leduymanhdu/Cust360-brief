@@ -6,7 +6,7 @@ import { ApiService } from '../services/api.js';
 import { Toast } from './toast.js';
 
 export const LoginComponent = {
-    render(container, onLoginSuccess, onNavigateToSearch) {
+    render(container, onLoginSuccess) {
         container.innerHTML = `
             <div class="login-view-container">
                 <div class="login-card">
@@ -27,7 +27,7 @@ export const LoginComponent = {
                     <form id="login-form" novalidate>
                         <!-- Username / Email Field -->
                         <div class="form-group">
-                            <label class="form-label" for="login-username">Tên tài khoản hoặc Email</label>
+                            <label class="form-label" for="login-username">Email</label>
                             <div class="input-wrapper">
                                 <span class="input-icon-left">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -39,7 +39,7 @@ export const LoginComponent = {
                                     type="text"
                                     id="login-username"
                                     class="form-control"
-                                    placeholder="admin@cust360.vn hoặc tên tài khoản"
+                                    placeholder="username@gmail.com"
                                     autocomplete="username"
                                 />
                             </div>
@@ -90,33 +90,14 @@ export const LoginComponent = {
                         </button>
                     </form>
 
-                    <!-- Fast Link & Demo Helpers -->
-                    <div class="login-footer-links">
-                        <a href="javascript:void(0)" id="link-direct-search" class="link-bypass-search">
-                            <span>Chuyển nhanh đến màn hình Tìm kiếm tài khoản</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </a>
-
-                        <div class="demo-credentials-box">
-                            <div class="demo-title">Tài khoản mẫu (Click để điền nhanh)</div>
-                            <div class="demo-chips">
-                                <button type="button" class="chip-btn" data-email="sales@cust360.vn">Kinh doanh (SALES)</button>
-                                <button type="button" class="chip-btn" data-email="admin@cust360.vn">Quản trị (ADMIN)</button>
-                                <button type="button" class="chip-btn" data-email="service@cust360.vn">Dịch vụ (SERVICE)</button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         `;
 
-        this.attachEvents(container, onLoginSuccess, onNavigateToSearch);
+        this.attachEvents(container, onLoginSuccess);
     },
 
-    attachEvents(container, onLoginSuccess, onNavigateToSearch) {
+    attachEvents(container, onLoginSuccess) {
         const form = container.querySelector('#login-form');
         const usernameInput = container.querySelector('#login-username');
         const passwordInput = container.querySelector('#login-password');
@@ -127,8 +108,6 @@ export const LoginComponent = {
         const bannerErrorText = container.querySelector('#login-error-text');
         const usernameError = container.querySelector('#username-error-text');
         const passwordError = container.querySelector('#password-error-text');
-        const directSearchLink = container.querySelector('#link-direct-search');
-        const demoChips = container.querySelectorAll('.chip-btn');
 
         // Toggle Password Visibility
         togglePasswordBtn.addEventListener('click', () => {
@@ -136,23 +115,6 @@ export const LoginComponent = {
             passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
             eyeShow.style.display = isPassword ? 'none' : 'block';
             eyeHide.style.display = isPassword ? 'block' : 'none';
-        });
-
-        // Quick demo credential clicks
-        demoChips.forEach(chip => {
-            chip.addEventListener('click', () => {
-                const email = chip.getAttribute('data-email');
-                usernameInput.value = email;
-                passwordInput.value = 'Password123';
-                this.clearErrors({ usernameInput, passwordInput, bannerError, usernameError, passwordError });
-                Toast.show(`Đã chọn tài khoản mẫu: ${email}`, 'info');
-            });
-        });
-
-        // Direct link to search
-        directSearchLink.addEventListener('click', (e) => {
-            e.preventDefault();
-            onNavigateToSearch();
         });
 
         // Real-time error clearance on input
@@ -206,12 +168,12 @@ export const LoginComponent = {
 
             bannerError.classList.remove('visible');
 
-            // Call API or Fallback
+            // Authentication must be verified by the backend.
             const res = await ApiService.login(username, password);
-            if (res.success) {
+            if (res.success && res.access_token && res.user) {
                 Toast.show('Đăng nhập thành công! Đang chuyển đến màn hình tra cứu...', 'success');
                 setTimeout(() => {
-                    onLoginSuccess(res.user);
+                    onLoginSuccess(res.user, res.access_token);
                 }, 500);
             } else {
                 bannerErrorText.textContent = res.message || 'Tài khoản hoặc mật khẩu không chính xác.';
