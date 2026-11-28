@@ -1,8 +1,11 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
 
-from app.mock_data import ACCOUNTS
-from app.schemas import AccountSearchResponse, ErrorResponse
+from app.database import get_db
+from app.schemas import AccountSearchResponse, AccountSummary, ErrorResponse
 from app.security import get_current_user
+from app.services.user_service import search_accounts_by_scope
 
 router = APIRouter(prefix="/accounts", tags=["Accounts"])
 
@@ -10,7 +13,7 @@ router = APIRouter(prefix="/accounts", tags=["Accounts"])
 @router.get(
     "/search",
     response_model=AccountSearchResponse,
-    summary="Search accounts by legal name or tax code",
+    summary="Search accounts by legal name or tax code within caller's account scope",
     responses={
         401: {"model": ErrorResponse, "description": "Authentication required."},
     },
@@ -23,44 +26,40 @@ def search_accounts(
         examples=["ABC"],
     ),
     user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
 ) -> AccountSearchResponse:
-    """Return only accounts in the caller's account scope.
+    """Return only accounts in the caller's authorized account scope from the database.
 
-    Multiple matches are never selected automatically; the client must show
-    the candidates and let the user make a manual selection.
+    Multiple matches require manual selection by the client.
     """
-    query = q.casefold().strip()
+    query = q.strip()
     allowed_ids = user["account_ids"]
-    results = [
-        account.model_copy(
-            update={
-                "match_status": (
-                    "EXACT"
-                    if account.tax_code and account.tax_code.casefold() == query
-                    else "AMBIGUOUS"
-                    if len(
-                        [
-                            candidate
-                            for candidate in ACCOUNTS
-                            if candidate.id in allowed_ids
-                            and (
-                                query in candidate.legal_name.casefold()
-                                or (candidate.tax_code and query in candidate.tax_code.casefold())
-                            )
-                        ]
-                    )
-                    > 1
-                    else "SINGLE"
-                )
-            }
+
+    db_accounts = search_accounts_by_scope(db, query, allowed_ids)
+    
+    # Map to AccountSummary
+    results = []
+    total_matches = len(db_accounts)
+
+    for acc in db_accounts:
+        match_status = (
+            "EXACT"
+            if acc.tax_code and acc.tax_code.casefold() == query.casefold()
+            else "AMBIGUOUS"
+            if total_matches > 1
+            else "SINGLE"
         )
-        for account in ACCOUNTS
-        if account.id in allowed_ids
-        and (
-            query in account.legal_name.casefold()
-            or (account.tax_code and query in account.tax_code.casefold())
+        results.append(
+            AccountSummary(
+                id=UUID(acc.id),
+                legal_name=acc.legal_name,
+                tax_code=acc.tax_code,
+                industry=acc.industry,
+                status=acc.status,
+                match_status=match_status,
+            )
         )
-    ]
+
     return AccountSearchResponse(
         results=results,
         requires_manual_selection=len(results) > 1,
