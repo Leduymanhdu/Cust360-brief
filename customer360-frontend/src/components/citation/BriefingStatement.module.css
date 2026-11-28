@@ -1,0 +1,12 @@
+.statement {
+  margin: 0 0 10px 0;
+  line-height: 1.65;
+  color: #202124;
+  font-size: 0.9rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  .statement {
+    color: #e8eaed;
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "_description": "PII detection & masking rules for Gate 3. Vietnamese context.",
+  "_rfp_ref": "SEC 02 (personal data protection), Mục 6 (mask personal phone/email)",
+  "_principle": "Mask PERSONAL PII. Keep BUSINESS contact info per policy.",
+
+  "rules": [
+    {
+      "id": "PII-01",
+      "type": "phone_personal",
+      "description": "Số điện thoại cá nhân VN (di động: 09x, 03x, 07x, 08x)",
+      "regex": "(?:(?:SĐT|Di động|Zalo|Tel|Phone|Điện thoại)\\s*[:.]?\\s*)?(?:\\+84|0)(?:9[0-9]|3[2-9]|7[0-9]|8[1-9])[\\.\\s-]?\\d{3}[\\.\\s-]?\\d{3,4}",
+      "mask": "***-***-****",
+      "action": "mask",
+      "note": "Chỉ mask nếu đi kèm context cá nhân. Hotline (1900/1800) giữ nguyên."
+    },
+    {
+      "id": "PII-02",
+      "type": "email_personal",
+      "description": "Email cá nhân (gmail, yahoo, hotmail, outlook)",
+      "regex": "[a-zA-Z0-9._%+-]+@(?:gmail|yahoo|hotmail|outlook|protonmail|icloud|aol)(?:\\.[a-zA-Z]{2,3}){1,2}",
+      "mask": "***@***.***",
+      "action": "mask",
+      "note": "Email @company.vn giữ nguyên - đó là business contact."
+    },
+    {
+      "id": "PII-03",
+      "type": "cccd",
+      "description": "Căn cước công dân (12 số, bắt đầu 0xx)",
+      "regex": "(?:CCCD|CMND|Căn cước|ID)\\s*[:.]?\\s*0\\d{2}[\\s.-]?\\d{3}[\\s.-]?\\d{3}[\\s.-]?\\d{3}",
+      "mask": "CCCD: ***-***-***-***",
+      "action": "mask",
+      "note": "Luôn mask - đây là sensitive ID."
+    },
+    {
+      "id": "PII-04",
+      "type": "bank_account",
+      "description": "Số tài khoản ngân hàng (8-16 số, thường đi kèm tên NH)",
+      "regex": "(?:TK|Tài khoản|STK|Account)\\s*(?:ngân hàng|NH|thanh toán)?\\s*[:.]?\\s*(?:[A-Z]{2,4}\\s+)?\\d{4}[\\s.-]?\\d{4}[\\s.-]?\\d{2,4}(?:[\\s.-]?\\d{2,4})?",
+      "mask": "TK: ****-****-****",
+      "action": "mask",
+      "note": "Mask số TK cá nhân. TK công ty có thể giữ tùy policy."
+    },
+    {
+      "id": "PII-05",
+      "type": "tax_number_personal",
+      "description": "Mã số thuế cá nhân (10 số, không có -xxx suffix)",
+      "regex": "(?:MST|Mã số thuế)\\s*[:.]?\\s*\\d{3}[\\s.-]?\\d{3}[\\s.-]?\\d{4}(?![-]\\d)",
+      "mask": "MST: ***-***-****",
+      "action": "flag",
+      "note": "MST 10 số = cá nhân → flag review. MST 13 số (10-3) = doanh nghiệp → keep."
+    }
+  ],
+
+  "whitelist": {
+    "_description": "Patterns to KEEP (business data, not personal PII)",
+    "patterns": [
+      {
+        "type": "business_email",
+        "description": "Email doanh nghiệp - giữ nguyên",
+        "regex": "[a-zA-Z0-9._%+-]+@(?!gmail|yahoo|hotmail|outlook|protonmail|icloud|aol)[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+        "action": "keep"
+      },
+      {
+        "type": "hotline",
+        "description": "Hotline/tổng đài - giữ nguyên",
+        "regex": "(?:1[89]00|\\(0\\d{2,3}\\))\\s*\\d{3,4}(?:[\\s.-]?\\d{3,4})?",
+        "action": "keep"
+      },
+      {
+        "type": "tax_number_business",
+        "description": "MST doanh nghiệp (13 số: 10-3) - giữ nguyên",
+        "regex": "(?:MST|Mã số thuế)\\s*[:.]?\\s*\\d{10}[-]\\d{3}",
+        "action": "keep"
+      }
+    ]
+  }
+}

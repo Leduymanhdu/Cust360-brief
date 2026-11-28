@@ -1,0 +1,140 @@
+{
+  "report_type": "full_pipeline_test",
+  "timestamp": "2026-11-15T13:04:00.606219",
+  "target_directory": "test_data/",
+  "total_files": 10,
+  "summary": {
+    "CLEAN": 5,
+    "PASSED_WITH_PII": 2,
+    "REJECTED": 3
+  },
+  "results": [
+    {
+      "file": "Bien_ban_hop_01.pdf",
+      "filepath": "test_data\\clean\\Bien_ban_hop_01.pdf",
+      "gates": {
+        "gate1": "PASS",
+        "gate2": "PASS",
+        "gate3": "PASS"
+      },
+      "final_status": "CLEAN",
+      "stopped_at": null,
+      "issues": []
+    },
+    {
+      "file": "Hoa_don_INV-2026-303.pdf",
+      "filepath": "test_data\\clean\\Hoa_don_INV-2026-303.pdf",
+      "gates": {
+        "gate1": "PASS",
+        "gate2": "PASS",
+        "gate3": "PASS"
+      },
+      "final_status": "CLEAN",
+      "stopped_at": null,
+      "issues": []
+    },
+    {
+      "file": "Notes_NOTE-2026-001.pdf",
+      "filepath": "test_data\\clean\\Notes_NOTE-2026-001.pdf",
+      "gates": {
+        "gate1": "PASS",
+        "gate2": "PASS",
+        "gate3": "PASS"
+      },
+      "final_status": "CLEAN",
+      "stopped_at": null,
+      "issues": []
+    },
+    {
+      "file": "quotation-format.pdf",
+      "filepath": "test_data\\clean\\quotation-format.pdf",
+      "gates": {
+        "gate1": "PASS",
+        "gate2": "PASS",
+        "gate3": "PASS"
+      },
+      "final_status": "CLEAN",
+      "stopped_at": null,
+      "issues": []
+    },
+    {
+      "file": "tax-invoice-format.pdf",
+      "filepath": "test_data\\clean\\tax-invoice-format.pdf",
+      "gates": {
+        "gate1": "PASS",
+        "gate2": "PASS",
+        "gate3": "PASS"
+      },
+      "final_status": "CLEAN",
+      "stopped_at": null,
+      "issues": []
+    },
+    {
+      "file": "contacts_with_pii.csv",
+      "filepath": "test_data\\csv_samples\\contacts_with_pii.csv",
+      "gates": {
+        "gate1": "SKIP",
+        "gate2": "PASS",
+        "gate3": "PII_FOUND"
+      },
+      "final_status": "PASSED_WITH_PII",
+      "stopped_at": null,
+      "issues": [
+        "PII found: 8 (masked: 8, kept: 0)"
+      ],
+      "masked_output": "D:\\Mobile\\Cust360-brief\\security_scripts\\test_data\\masked_output\\contacts_with_pii_masked.csv"
+    },
+    {
+      "file": "dirty_injection_test.pdf",
+      "filepath": "test_data\\dirty\\dirty_injection_test.pdf",
+      "gates": {
+        "gate1": "PASS",
+        "gate2": "REJECT"
+      },
+      "final_status": "REJECTED",
+      "stopped_at": "gate2",
+      "issues": [
+        "Injection detected: direct_override: 2, data_exfiltration: 2, system_prompt_extraction: 1, delimiter_escape: 3, access_control_bypass: 1"
+      ]
+    },
+    {
+      "file": "dirty_mixed_test.pdf",
+      "filepath": "test_data\\dirty\\dirty_mixed_test.pdf",
+      "gates": {
+        "gate1": "PASS",
+        "gate2": "REJECT"
+      },
+      "final_status": "REJECTED",
+      "stopped_at": "gate2",
+      "issues": [
+        "Injection detected: direct_override: 1, data_exfiltration: 1"
+      ]
+    },
+    {
+      "file": "dirty_oversized_25pages.pdf",
+      "filepath": "test_data\\dirty\\dirty_oversized_25pages.pdf",
+      "gates": {
+        "gate1": "FAIL"
+      },
+      "final_status": "REJECTED",
+      "stopped_at": "gate1",
+      "issues": [
+        "page_count: Vượt giới hạn trang: 25 > 20"
+      ]
+    },
+    {
+      "file": "dirty_pii_test.pdf",
+      "filepath": "test_data\\dirty\\dirty_pii_test.pdf",
+      "gates": {
+        "gate1": "PASS",
+        "gate2": "PASS",
+        "gate3": "PII_FOUND"
+      },
+      "final_status": "PASSED_WITH_PII",
+      "stopped_at": null,
+      "issues": [
+        "PII found: 8 (masked: 7, kept: 0)"
+      ]
+    }
+  ]
+}
