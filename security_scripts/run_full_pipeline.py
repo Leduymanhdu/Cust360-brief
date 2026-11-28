@@ -124,6 +124,22 @@ def run_pipeline(target_dir: str):
             file_result["gates"]["gate1"] = "SKIP"
             print(f"     Gate 1 (Validation): SKIP (not PDF)")
 
+        # A failed/errored PDF validation must stop before the file is parsed by
+        # the injection or PII scanners.
+        if gate1_failed:
+            file_result["gates"].update({"gate2": "SKIP", "gate3": "SKIP"})
+            file_result["final_status"] = "REJECTED"
+            file_result["decision"] = "REJECT"
+            file_result["stopped_at"] = "gate1"
+            file_result["rejection_reason"] = "; ".join(file_result["issues"])
+            file_result["gate_results"] = {
+                "gate1": gate1_result,
+                "gate2": None,
+                "gate3": None,
+            }
+            pipeline_results.append(file_result)
+            continue
+
         # ─── Gate 2: Injection Scan ───
         try:
             g2 = gate2_scan(filepath, g2_patterns)
@@ -151,6 +167,22 @@ def run_pipeline(target_dir: str):
             file_result["issues"].append("Injection: flagged for review")
         else:
             print()
+
+        # Rejected or flagged injection results do not proceed to PII parsing.
+        if gate2_failed:
+            file_result["gates"]["gate3"] = "SKIP"
+            is_flagged = g2["overall_result"] == "FLAG"
+            file_result["final_status"] = "FLAGGED" if is_flagged else "REJECTED"
+            file_result["decision"] = "REJECT"
+            file_result["stopped_at"] = "gate2"
+            file_result["rejection_reason"] = "; ".join(file_result["issues"])
+            file_result["gate_results"] = {
+                "gate1": gate1_result,
+                "gate2": gate2_result,
+                "gate3": None,
+            }
+            pipeline_results.append(file_result)
+            continue
 
         # ─── Gate 3: PII Mask ───
         try:

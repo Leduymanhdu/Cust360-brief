@@ -1,0 +1,44 @@
+/* Responsive Media Queries */
+@media (max-width: 768px) {
+    .app-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .brand-name {
+        font-size: 1rem;
+    }
+
+    .user-info-text {
+        display: none;
+    }
+
+    .search-view-container {
+        padding: 1.25rem 1rem;
+    }
+
+    .search-page-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .btn-back-login {
+        justify-content: center;
+    }
+
+    .search-form-row {
+        flex-direction: column;
+    }
+
+    .btn-search-submit {
+        padding: 0.75rem;
+        justify-content: center;
+    }
+
+    .accounts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .login-card {
+        padding: 2rem 1.25rem;
+    }
+}

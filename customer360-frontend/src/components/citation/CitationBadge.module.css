@@ -1,0 +1,246 @@
+.wrapper {
+  position: relative;
+  display: inline-block;
+  line-height: 1;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-family: 'Inter', 'Roboto', system-ui, sans-serif;
+  line-height: 1;
+  padding: 1px 4px;
+  margin-left: 2px;
+  border-radius: 3px;
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  border: 1px solid #c5d9fb;
+  cursor: pointer;
+  vertical-align: super;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+  user-select: none;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  font: inherit;
+}
+
+.badge:hover {
+  background-color: #c5d9fb;
+  box-shadow: 0 1px 3px rgba(26, 115, 232, 0.25);
+}
+
+.badge:focus-visible {
+  outline: 2px solid #1a73e8;
+  outline-offset: 2px;
+}
+
+.badgePinned {
+  background-color: #1a73e8;
+  color: #ffffff;
+  border-color: #1557b0;
+}
+
+.badgeUnknown {
+  background-color: #f5f5f5;
+  color: #9e9e9e;
+  border-color: #e0e0e0;
+  cursor: default;
+}
+
+.badgeSkeleton {
+  display: inline-block;
+  font-size: 0.65rem;
+  padding: 1px 4px;
+  margin-left: 2px;
+  vertical-align: super;
+  color: #bdbdbd;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.tooltip {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  width: 300px;
+  max-width: 90vw;
+  background: #ffffff;
+  border: 1px solid #dadce0;
+  border-radius: 8px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  animation: fadeIn 0.15s ease;
+  pointer-events: auto;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.tooltipTop {
+  bottom: calc(100% + 8px);
+}
+
+.tooltipBottom {
+  top: calc(100% + 8px);
+}
+
+.tooltipPinned {
+  box-shadow:
+    0 8px 16px -2px rgba(0, 0, 0, 0.12),
+    0 4px 8px -2px rgba(0, 0, 0, 0.08);
+  border-color: #1a73e8;
+}
+
+.arrow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+}
+
+.arrowTop {
+  bottom: -7px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 7px solid #ffffff;
+  filter: drop-shadow(0 1px 0 #dadce0);
+}
+
+.arrowBottom {
+  top: -7px;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-bottom: 7px solid #ffffff;
+  filter: drop-shadow(0 -1px 0 #dadce0);
+}
+
+.sourceBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background-color: #e8f0fe;
+  color: #1a73e8;
+  margin-bottom: 8px;
+}
+
+.pageNumber {
+  font-weight: 400;
+  color: #5f6368;
+}
+
+.claimText {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #202124;
+  line-height: 1.5;
+  margin: 0 0 8px 0;
+}
+
+.excerpt {
+  font-size: 0.75rem;
+  color: #5f6368;
+  line-height: 1.4;
+  border-left: 3px solid #dadce0;
+  margin: 0 0 8px 0;
+  padding: 4px 8px;
+  font-style: italic;
+  background: #f8f9fa;
+  border-radius: 0 4px 4px 0;
+}
+
+.sourceName {
+  font-size: 0.72rem;
+  color: #5f6368;
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.validationBadge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.validation_valid {
+  background: #e6f4ea;
+  color: #137333;
+}
+
+.validation_invalid {
+  background: #fce8e6;
+  color: #c5221f;
+}
+
+.validation_rejected {
+  background: #fef7e0;
+  color: #b05a00;
+}
+
+@media (prefers-color-scheme: dark) {
+  .badge {
+    background-color: #1e3a5f;
+    color: #8ab4f8;
+    border-color: #2d4f7c;
+  }
+  .badge:hover {
+    background-color: #2d4f7c;
+  }
+  .badgePinned {
+    background-color: #8ab4f8;
+    color: #1e3a5f;
+  }
+  .tooltip {
+    background: #2d2d2d;
+    border-color: #3c3c3c;
+    color: #e8eaed;
+  }
+  .claimText {
+    color: #e8eaed;
+  }
+  .sourceBadge {
+    background-color: #1e3a5f;
+    color: #8ab4f8;
+  }
+  .excerpt {
+    background: #3c3c3c;
+    border-color: #555;
+    color: #bdc1c6;
+  }
+  .sourceName {
+    color: #9aa0a6;
+  }
+  .arrowTop {
+    filter: drop-shadow(0 1px 0 #3c3c3c);
+    border-top-color: #2d2d2d;
+  }
+  .arrowBottom {
+    filter: drop-shadow(0 -1px 0 #3c3c3c);
+    border-bottom-color: #2d2d2d;
+  }
+}
