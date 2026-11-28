@@ -1,8 +1,10 @@
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.exc import SQLAlchemyError
 
+from app.database import ping_database
 from app.routers import accounts, admin, auth, briefings
 
 API_PREFIX = "/api/v1"
@@ -67,3 +69,24 @@ def root() -> dict[str, str]:
 @app.get("/health", tags=["System"], summary="Check API liveness")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get(
+    "/health/db",
+    tags=["System"],
+    summary="Check PostgreSQL connectivity",
+    responses={
+        503: {
+            "description": "PostgreSQL is unreachable with the configured DATABASE_URL.",
+        }
+    },
+)
+def health_db() -> dict[str, str]:
+    try:
+        ping_database()
+    except SQLAlchemyError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="PostgreSQL is unreachable.",
+        ) from exc
+    return {"database": "ok"}

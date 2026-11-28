@@ -124,11 +124,40 @@ class BriefingCitationsResponse(APIModel):
     citations: list[CitationItem]
 
 
+class ImportFileKind(str, Enum):
+    CSV = "CSV"
+    PDF = "PDF"
+
+
+class ImportJobStatus(str, Enum):
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+class ImportedFileMetadata(APIModel):
+    file_name: str = Field(description="Original file name supplied by the client.")
+    kind: ImportFileKind
+    content_type: str
+    size_bytes: int = Field(ge=0, description="Stored file size in bytes.")
+    checksum_sha256: str = Field(description="SHA-256 of the stored file content.")
+    storage_path: str = Field(
+        description="Path relative to the configured upload directory."
+    )
+
+
 class ImportJobResponse(APIModel):
     job_id: UUID
-    status: Literal["PROCESSING"] = "PROCESSING"
-    records_received: int = Field(ge=0)
-    message: str = "Import accepted for processing."
+    status: ImportJobStatus
+    file: ImportedFileMetadata
+    records_received: int = Field(default=0, ge=0)
+    warnings: list[str] = Field(default_factory=list)
+    error: str | None = Field(default=None, description="Failure reason when status is FAILED.")
+    message: str
+    created_at: datetime
+    updated_at: datetime
+    completed_at: datetime | None = None
 
 
 class RevokeAccessRequest(APIModel):
